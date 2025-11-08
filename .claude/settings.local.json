@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(pip install pygame)",
+      "Bash(python medieval_game.py)",
+      "WebFetch(domain:opengameart.org)",
+      "Bash(python medieval_village.py)",
+      "Bash(python \"C:\\Users\\lyyud\\idea_202511\\lumbridge.py\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
