@@ -1,1 +1,9 @@
-pygame
+# Lumbridge Three.js - No Python dependencies required
+# This project runs entirely in the browser using JavaScript and Three.js
+
+# For development server (optional):
+# python -m http.server 8000
+
+# For testing (Node.js required):
+# npm install
+# npm test
