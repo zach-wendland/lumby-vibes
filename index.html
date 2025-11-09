@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumbridge - Old School RuneScape Recreation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Game Canvas -->
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- UI Overlay -->
+    <div id="ui-overlay">
+        <!-- Top Bar -->
+        <div id="top-bar">
+            <div id="player-stats">
+                <div class="stat-item">
+                    <span class="stat-label">HP:</span>
+                    <div class="stat-bar">
+                        <div id="hp-bar" class="bar-fill hp-fill"></div>
+                        <span id="hp-text" class="stat-text">10/10</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Prayer:</span>
+                    <div class="stat-bar">
+                        <div id="prayer-bar" class="bar-fill prayer-fill"></div>
+                        <span id="prayer-text" class="stat-text">1/1</span>
+                    </div>
+                </div>
+            </div>
+            <div id="combat-level">
+                <span>Combat Lvl: <span id="combat-lvl-text">3</span></span>
+            </div>
+        </div>
+
+        <!-- Chat Box / Message Area -->
+        <div id="chat-box">
+            <div id="chat-messages"></div>
+            <div id="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Type to chat..." />
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div id="right-panel">
+            <!-- Tab Navigation -->
+            <div id="tab-nav">
+                <button class="tab-btn active" data-tab="stats">Stats</button>
+                <button class="tab-btn" data-tab="inventory">Inventory</button>
+                <button class="tab-btn" data-tab="equipment">Equipment</button>
+                <button class="tab-btn" data-tab="prayer">Prayer</button>
+                <button class="tab-btn" data-tab="magic">Magic</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content">
+                <!-- Stats Tab -->
+                <div id="stats-tab" class="tab-panel active">
+                    <h3>Skills</h3>
+                    <div id="skills-list">
+                        <div class="skill-item" data-skill="attack">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c00' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Attack" class="skill-icon">
+                            <span class="skill-name">Attack</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="strength">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230c0' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Strength" class="skill-icon">
+                            <span class="skill-name">Strength</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="defence">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300c' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Defence" class="skill-icon">
+                            <span class="skill-name">Defence</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="hitpoints">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c00' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E" alt="Hitpoints" class="skill-icon">
+                            <span class="skill-name">Hitpoints</span>
+                            <span class="skill-level">10</span>
+                            <span class="skill-xp">1154 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="mining">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Mining" class="skill-icon">
+                            <span class="skill-name">Mining</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="woodcutting">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23840' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Woodcutting" class="skill-icon">
+                            <span class="skill-name">Woodcutting</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="fishing">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2308c' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Fishing" class="skill-icon">
+                            <span class="skill-name">Fishing</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                        <div class="skill-item" data-skill="cooking">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23c48' d='M12 2l9 9-9 9-9-9z'/%3E%3C/svg%3E" alt="Cooking" class="skill-icon">
+                            <span class="skill-name">Cooking</span>
+                            <span class="skill-level">1</span>
+                            <span class="skill-xp">0 XP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Tab -->
+                <div id="inventory-tab" class="tab-panel">
+                    <h3>Inventory (<span id="inventory-count">0</span>/28)</h3>
+                    <div id="inventory-grid"></div>
+                </div>
+
+                <!-- Equipment Tab -->
+                <div id="equipment-tab" class="tab-panel">
+                    <h3>Equipment</h3>
+                    <div id="equipment-slots">
+                        <div class="equipment-slot" data-slot="head">Head</div>
+                        <div class="equipment-slot" data-slot="cape">Cape</div>
+                        <div class="equipment-slot" data-slot="neck">Neck</div>
+                        <div class="equipment-slot" data-slot="weapon">Weapon</div>
+                        <div class="equipment-slot" data-slot="body">Body</div>
+                        <div class="equipment-slot" data-slot="shield">Shield</div>
+                        <div class="equipment-slot" data-slot="legs">Legs</div>
+                        <div class="equipment-slot" data-slot="hands">Hands</div>
+                        <div class="equipment-slot" data-slot="feet">Feet</div>
+                        <div class="equipment-slot" data-slot="ring">Ring</div>
+                        <div class="equipment-slot" data-slot="ammo">Ammo</div>
+                    </div>
+                    <div id="equipment-stats">
+                        <div>Attack bonus: <span id="attack-bonus">0</span></div>
+                        <div>Defence bonus: <span id="defence-bonus">0</span></div>
+                        <div>Strength bonus: <span id="strength-bonus">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Prayer Tab -->
+                <div id="prayer-tab" class="tab-panel">
+                    <h3>Prayer</h3>
+                    <div id="prayer-list">
+                        <div class="prayer-item disabled" data-prayer="thick_skin">
+                            <span class="prayer-name">Thick Skin</span>
+                            <span class="prayer-level">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Magic Tab -->
+                <div id="magic-tab" class="tab-panel">
+                    <h3>Magic</h3>
+                    <div id="spell-list">
+                        <div class="spell-item" data-spell="lumbridge_teleport">
+                            <span class="spell-name">Lumbridge Home Teleport</span>
+                            <span class="spell-level">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minimap -->
+        <div id="minimap">
+            <canvas id="minimap-canvas" width="150" height="150"></canvas>
+            <div id="minimap-compass">N</div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen">
+            <div id="loading-content">
+                <h1>LUMBRIDGE</h1>
+                <div id="loading-bar">
+                    <div id="loading-progress"></div>
+                </div>
+                <p id="loading-text">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
+
+    <!-- Game Scripts -->
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
