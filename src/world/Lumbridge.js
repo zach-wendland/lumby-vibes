@@ -5,6 +5,8 @@
 import { WORLD_SIZE, TILE_SIZE, COLORS, BUILDINGS, NPC_TYPES, ENEMY_TYPES } from '../utils/Constants.js';
 import { NPC } from '../entities/NPC.js';
 import { Enemy } from '../entities/Enemy.js';
+import { NPC_DATA } from '../data/NPCData.js';
+import { ENEMY_DATA, SPAWN_LOCATIONS } from '../data/EnemyData.js';
 
 export class Lumbridge {
     constructor(engine) {
@@ -303,35 +305,61 @@ export class Lumbridge {
     }
 
     /**
-     * Create NPCs
+     * Create NPCs using authentic OSRS data
      */
     createNPCs() {
-        // Castle NPCs
-        this.npcs.push(new NPC(-25, -25, NPC_TYPES.DUKE_HORACIO, 'Duke Horacio'));
-        this.npcs.push(new NPC(-30, -30, NPC_TYPES.HANS, 'Hans'));
-        this.npcs.push(new NPC(-28, -32, NPC_TYPES.COOK, 'Cook'));
+        // Define NPC spawn positions based on OSRS Lumbridge
+        const npcSpawns = {
+            DUKE_HORACIO: { x: -25, z: -25 },
+            HANS: { x: -30, z: -30 },
+            COOK: { x: -28, z: -32 },
+            FATHER_AERECK: { x: -10, z: 25 },
+            BOB: { x: -20, z: 40 },
+            DONIE: { x: -50, z: 10 },
+            FRED_THE_FARMER: { x: -80, z: 10 },
+            LUMBRIDGE_GUIDE: { x: 0, z: 0 },
+            COMBAT_INSTRUCTOR: { x: 5, z: 5 },
+            MAGIC_INSTRUCTOR: { x: -5, z: 5 },
+        };
 
-        // Guards
-        this.npcs.push(new NPC(-20, -35, NPC_TYPES.GUARD, 'Guard'));
-        this.npcs.push(new NPC(-40, -35, NPC_TYPES.GUARD, 'Guard'));
-        this.npcs.push(new NPC(-20, -20, NPC_TYPES.GUARD, 'Guard'));
-        this.npcs.push(new NPC(-40, -20, NPC_TYPES.GUARD, 'Guard'));
+        // Create NPCs from NPC_DATA
+        for (const [npcKey, npcData] of Object.entries(NPC_DATA)) {
+            const spawnPos = npcSpawns[npcKey];
 
-        // Church
-        this.npcs.push(new NPC(-10, 25, NPC_TYPES.FATHER_AERECK, 'Father Aereck'));
+            if (spawnPos) {
+                const npc = new NPC(spawnPos.x, spawnPos.z, npcKey, npcData.name);
+                npc.npcId = npcKey; // Store the NPC ID for quest system
+                npc.npcData = npcData; // Store full data for dialogue
+                this.npcs.push(npc);
+            }
+        }
 
-        // Shops
-        this.npcs.push(new NPC(-50, 10, NPC_TYPES.DONIE, 'Shop keeper'));
-        this.npcs.push(new NPC(-20, 40, NPC_TYPES.BOB, 'Bob'));
+        // Add guards (4 guards around castle)
+        const guardPositions = [
+            { x: -20, z: -35 },
+            { x: -40, z: -35 },
+            { x: -20, z: -20 },
+            { x: -40, z: -20 }
+        ];
 
-        // Farmers
-        this.npcs.push(new NPC(-80, 10, NPC_TYPES.FARMER, 'Fred the Farmer'));
+        for (const pos of guardPositions) {
+            const guard = new NPC(pos.x, pos.z, NPC_TYPES.GUARD, 'Guard');
+            this.npcs.push(guard);
+        }
 
-        // Villagers
-        for (let i = 0; i < 10; i++) {
+        // Add wandering villagers (men and women)
+        for (let i = 0; i < 5; i++) {
             const x = -60 + Math.random() * 40;
             const z = -10 + Math.random() * 40;
-            this.npcs.push(new NPC(x, z, NPC_TYPES.VILLAGER, 'Villager'));
+            const man = new NPC(x, z, 'MAN', 'Man');
+            this.npcs.push(man);
+        }
+
+        for (let i = 0; i < 5; i++) {
+            const x = -60 + Math.random() * 40;
+            const z = -10 + Math.random() * 40;
+            const woman = new NPC(x, z, 'WOMAN', 'Woman');
+            this.npcs.push(woman);
         }
 
         // Add NPCs to scene
@@ -343,35 +371,23 @@ export class Lumbridge {
     }
 
     /**
-     * Create enemies
+     * Create enemies using authentic OSRS spawn data
      */
     createEnemies() {
-        // Chickens (west side, near farms)
-        for (let i = 0; i < 8; i++) {
-            const x = -85 + Math.random() * 20;
-            const z = 5 + Math.random() * 15;
-            this.enemies.push(new Enemy(x, z, 'CHICKEN'));
-        }
+        // Spawn enemies based on SPAWN_LOCATIONS from EnemyData
+        for (const [enemyType, locations] of Object.entries(SPAWN_LOCATIONS)) {
+            for (const location of locations) {
+                const { x, z, count, area } = location;
 
-        // Cows (northwest fields)
-        for (let i = 0; i < 6; i++) {
-            const x = -85 + Math.random() * 15;
-            const z = -35 + Math.random() * 15;
-            this.enemies.push(new Enemy(x, z, 'COW'));
-        }
+                // Spawn the specified number of enemies in this location
+                for (let i = 0; i < count; i++) {
+                    // Add some random spread around the spawn point
+                    const spawnX = x + (Math.random() - 0.5) * 20;
+                    const spawnZ = z + (Math.random() - 0.5) * 20;
 
-        // Goblins level 2 (east of river)
-        for (let i = 0; i < 6; i++) {
-            const x = 40 + Math.random() * 25;
-            const z = 10 + Math.random() * 25;
-            this.enemies.push(new Enemy(x, z, 'GOBLIN_2'));
-        }
-
-        // Goblins level 5 (further east)
-        for (let i = 0; i < 4; i++) {
-            const x = 60 + Math.random() * 20;
-            const z = 15 + Math.random() * 20;
-            this.enemies.push(new Enemy(x, z, 'GOBLIN_5'));
+                    this.enemies.push(new Enemy(spawnX, spawnZ, enemyType));
+                }
+            }
         }
 
         // Add enemies to scene

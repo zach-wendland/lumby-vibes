@@ -3,6 +3,7 @@
  */
 
 import { NPC_SPEED, NPC_TYPES, COLORS } from '../utils/Constants.js';
+import { NPC_DATA } from '../data/NPCData.js';
 
 export class NPC {
     constructor(x, z, npcType, name) {
@@ -13,8 +14,13 @@ export class NPC {
         this.name = name || npcType;
         this.speed = NPC_SPEED;
 
-        // Wander behavior
-        this.wanderRadius = 10;
+        // Store NPC data if available
+        this.npcData = NPC_DATA[npcType] || null;
+        this.npcId = npcType; // For quest system
+
+        // Wander behavior (use data from NPC_DATA if available)
+        this.wanderRadius = this.npcData ? (this.npcData.wanderRadius || 10) : 10;
+        this.roaming = this.npcData ? (this.npcData.roaming !== false) : true;
         this.wanderTimer = 0;
         this.wanderCooldown = Math.random() * 5 + 3; // 3-8 seconds
         this.targetPosition = null;
@@ -24,9 +30,9 @@ export class NPC {
         this.dialogues = this.getDialogues();
         this.currentDialogue = 0;
 
-        // Quest state
-        this.questGiver = false;
-        this.shopkeeper = false;
+        // Quest state (from NPC_DATA if available)
+        this.questGiver = this.npcData ? (this.npcData.questGiver && this.npcData.questGiver.length > 0) : false;
+        this.shopkeeper = this.npcData ? this.npcData.shopkeeper === true : false;
 
         this.setupNPCType();
         this.createMesh();
@@ -61,9 +67,15 @@ export class NPC {
     }
 
     /**
-     * Get NPC dialogues
+     * Get NPC dialogues (use NPCData if available)
      */
     getDialogues() {
+        // If NPC has data from NPCData.js, use the greeting dialogue
+        if (this.npcData && this.npcData.dialogue && this.npcData.dialogue.greeting) {
+            return this.npcData.dialogue.greeting;
+        }
+
+        // Fallback to hardcoded dialogues for compatibility
         const dialogueMap = {
             [NPC_TYPES.DUKE_HORACIO]: [
                 "Greetings! Welcome to my castle.",

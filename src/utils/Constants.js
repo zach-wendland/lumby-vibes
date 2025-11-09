@@ -49,22 +49,80 @@ export const SKILLS = {
     MINING: 'mining'
 };
 
-// Item IDs
+// Item IDs - Complete OSRS Lumbridge Items
 export const ITEMS = {
-    BRONZE_SWORD: { id: 1, name: 'Bronze sword', stackable: false },
-    BRONZE_AXE: { id: 2, name: 'Bronze axe', stackable: false },
-    BRONZE_PICKAXE: { id: 3, name: 'Bronze pickaxe', stackable: false },
-    SMALL_FISHING_NET: { id: 4, name: 'Small fishing net', stackable: false },
-    LOGS: { id: 5, name: 'Logs', stackable: true },
-    RAW_SHRIMPS: { id: 6, name: 'Raw shrimps', stackable: true },
-    COPPER_ORE: { id: 7, name: 'Copper ore', stackable: true },
-    TIN_ORE: { id: 8, name: 'Tin ore', stackable: true },
-    BONES: { id: 9, name: 'Bones', stackable: true },
-    FEATHER: { id: 10, name: 'Feather', stackable: true },
-    RAW_CHICKEN: { id: 11, name: 'Raw chicken', stackable: true },
-    COWHIDE: { id: 12, name: 'Cowhide', stackable: true },
-    RAW_BEEF: { id: 13, name: 'Raw beef', stackable: true },
-    COINS: { id: 14, name: 'Coins', stackable: true }
+    // Currency
+    COINS: { id: 995, name: 'Coins', stackable: true, value: 1 },
+    // Bones
+    BONES: { id: 526, name: 'Bones', stackable: true, value: 31 },
+    // Food drops
+    RAW_CHICKEN: { id: 2138, name: 'Raw chicken', stackable: true, value: 24 },
+    RAW_BEEF: { id: 2132, name: 'Raw beef', stackable: true, value: 70 },
+    RAW_RAT_MEAT: { id: 2134, name: 'Raw rat meat', stackable: true, value: 5 },
+    RAW_MUTTON: { id: 2138, name: 'Raw mutton', stackable: true, value: 40 },
+    // Materials
+    FEATHER: { id: 314, name: 'Feather', stackable: true, value: 3 },
+    COWHIDE: { id: 1739, name: 'Cowhide', stackable: true, value: 150 },
+    WOOL: { id: 1737, name: 'Wool', stackable: true, value: 60 },
+    BALL_OF_WOOL: { id: 1759, name: 'Ball of wool', stackable: true, value: 80 },
+    LOGS: { id: 1511, name: 'Logs', stackable: true, value: 50 },
+    COPPER_ORE: { id: 436, name: 'Copper ore', stackable: true, value: 30 },
+    TIN_ORE: { id: 438, name: 'Tin ore', stackable: true, value: 25 },
+    RAW_SHRIMPS: { id: 317, name: 'Raw shrimps', stackable: true, value: 15 },
+    // Weapons
+    BRONZE_SWORD: { id: 1277, name: 'Bronze sword', stackable: false, value: 25 },
+    BRONZE_AXE: { id: 1351, name: 'Bronze axe', stackable: false, value: 16 },
+    BRONZE_PICKAXE: { id: 1265, name: 'Bronze pickaxe', stackable: false, value: 16 },
+    BRONZE_DAGGER: { id: 1205, name: 'Bronze dagger', stackable: false, value: 20 },
+    BRONZE_SPEAR: { id: 1237, name: 'Bronze spear', stackable: false, value: 30 },
+    IRON_AXE: { id: 1349, name: 'Iron axe', stackable: false, value: 112 },
+    IRON_PICKAXE: { id: 1267, name: 'Iron pickaxe', stackable: false, value: 175 },
+    STEEL_AXE: { id: 1353, name: 'Steel axe', stackable: false, value: 560 },
+    MITHRIL_AXE: { id: 1355, name: 'Mithril axe', stackable: false, value: 1248 },
+    ADAMANT_AXE: { id: 1357, name: 'Adamant axe', stackable: false, value: 2912 },
+    RUNE_AXE: { id: 1359, name: 'Rune axe', stackable: false, value: 20992 },
+    // Armor
+    BRONZE_FULL_HELM: { id: 1155, name: 'Bronze full helm', stackable: false, value: 40 },
+    BRONZE_SQUARE_SHIELD: { id: 1173, name: 'Bronze square shield', stackable: false, value: 25 },
+    GOBLIN_MAIL: { id: 288, name: 'Goblin mail', stackable: false, value: 12 },
+    WOODEN_SHIELD: { id: 1171, name: 'Wooden shield', stackable: false, value: 10 },
+    LEATHER_BOOTS: { id: 1061, name: 'Leather boots', stackable: false, value: 20 },
+    LEATHER_GLOVES: { id: 1059, name: 'Leather gloves', stackable: false, value: 15 },
+    // Tools
+    SMALL_FISHING_NET: { id: 303, name: 'Small fishing net', stackable: false, value: 5 },
+    SHEARS: { id: 1735, name: 'Shears', stackable: false, value: 1 },
+    BUCKET: { id: 1925, name: 'Bucket', stackable: false, value: 2 },
+    BUCKET_OF_MILK: { id: 1927, name: 'Bucket of milk', stackable: false, value: 10 },
+    POT: { id: 1931, name: 'Pot', stackable: false, value: 1 },
+    POT_OF_FLOUR: { id: 1933, name: 'Pot of flour', stackable: false, value: 5 },
+    EGG: { id: 1944, name: 'Egg', stackable: false, value: 8 },
+    JUG: { id: 1935, name: 'Jug', stackable: false, value: 1 },
+    TINDERBOX: { id: 590, name: 'Tinderbox', stackable: false, value: 1 },
+    CHISEL: { id: 1755, name: 'Chisel', stackable: false, value: 1 },
+    HAMMER: { id: 2347, name: 'Hammer', stackable: false, value: 1 },
+    ROPE: { id: 954, name: 'Rope', stackable: false, value: 18 },
+    // Quest items
+    AIR_TALISMAN: { id: 1438, name: 'Air talisman', stackable: false, value: 10 },
+    AMULET_OF_GHOSTSPEAK: { id: 552, name: 'Amulet of ghostspeak', stackable: false, value: 100 },
+    GHOST_SKULL: { id: 553, name: 'Ghost\'s skull', stackable: false, value: 1 },
+    // Consumables
+    BEER: { id: 1917, name: 'Beer', stackable: false, value: 2 },
+    GRAPES: { id: 1987, name: 'Grapes', stackable: true, value: 15 },
+    // Runes
+    CHAOS_RUNE: { id: 562, name: 'Chaos rune', stackable: true, value: 100 },
+    NATURE_RUNE: { id: 561, name: 'Nature rune', stackable: true, value: 200 },
+    LAW_RUNE: { id: 563, name: 'Law rune', stackable: true, value: 180 },
+    DEATH_RUNE: { id: 560, name: 'Death rune', stackable: true, value: 250 },
+    // Rare items
+    RUNE_JAVELIN: { id: 830, name: 'Rune javelin', stackable: true, value: 500 },
+    RUNE_DAGGER: { id: 1213, name: 'Rune dagger', stackable: false, value: 5000 },
+    RUNE_2H_SWORD: { id: 1319, name: 'Rune 2h sword', stackable: false, value: 38000 },
+    DRAGON_MED_HELM: { id: 1149, name: 'Dragon med helm', stackable: false, value: 59000 },
+    SHIELD_LEFT_HALF: { id: 2366, name: 'Shield left half', stackable: false, value: 65000000 },
+    DRAGON_SPEAR: { id: 1249, name: 'Dragon spear', stackable: false, value: 37000 },
+    // Misc
+    BRONZE_ARROW: { id: 882, name: 'Bronze arrow', stackable: true, value: 2 },
+    NEWCOMER_MAP: { id: 550, name: 'Newcomer map', stackable: false, value: 1 }
 };
 
 // NPC Types
