@@ -22,8 +22,8 @@ export class XPCalculator {
      */
     static getXPForLevel(level) {
         if (level < 1) return 0;
-        if (level > 99) return XP_TABLE[99];
-        return XP_TABLE[level];
+        if (level > 99) return XP_TABLE[98]; // Level 99 is at index 98
+        return XP_TABLE[level - 1]; // XP_TABLE is 0-indexed, levels are 1-indexed
     }
 
     /**
@@ -32,7 +32,7 @@ export class XPCalculator {
     static getXPToNextLevel(xp) {
         const currentLevel = this.getLevelFromXP(xp);
         if (currentLevel >= 99) return 0;
-        return XP_TABLE[currentLevel + 1] - xp;
+        return XP_TABLE[currentLevel] - xp; // Next level is at index currentLevel
     }
 
     /**
@@ -42,8 +42,8 @@ export class XPCalculator {
         const currentLevel = this.getLevelFromXP(xp);
         if (currentLevel >= 99) return 1;
 
-        const currentLevelXP = XP_TABLE[currentLevel];
-        const nextLevelXP = XP_TABLE[currentLevel + 1];
+        const currentLevelXP = XP_TABLE[currentLevel - 1]; // Current level XP
+        const nextLevelXP = XP_TABLE[currentLevel]; // Next level XP
         const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
 
         return Math.max(0, Math.min(1, progress));

@@ -3,6 +3,7 @@
  */
 
 import { ENEMY_SPEED, ENEMY_TYPES, ITEMS } from '../utils/Constants.js';
+import { ENEMY_DATA } from '../data/EnemyData.js';
 
 export class Enemy {
     constructor(x, z, enemyType) {
@@ -10,15 +11,21 @@ export class Enemy {
         this.startPosition = this.position.clone();
         this.rotation = 0;
         this.enemyType = enemyType;
+        this.enemyId = enemyType; // For loot system
 
-        // Get stats from ENEMY_TYPES
-        const stats = ENEMY_TYPES[enemyType];
-        this.name = stats.name;
-        this.level = stats.level;
-        this.maxHP = stats.hp;
-        this.currentHP = stats.hp;
-        this.xpReward = stats.xp;
+        // Get stats from ENEMY_DATA (fallback to ENEMY_TYPES for compatibility)
+        const stats = ENEMY_DATA[enemyType] || ENEMY_TYPES[enemyType] || {};
+        this.name = stats.name || 'Unknown';
+        this.level = stats.level || 1;
+        this.maxHP = stats.hitpoints || stats.hp || 10;
+        this.currentHP = this.maxHP;
+        this.xpReward = stats.xpRewards ?
+            (stats.xpRewards.attack + stats.xpRewards.strength + stats.xpRewards.defence) / 3 :
+            (stats.xp || 10);
         this.speed = ENEMY_SPEED;
+
+        // Store full enemy data for reference
+        this.enemyData = stats;
 
         // Combat state
         this.inCombat = false;
@@ -35,9 +42,9 @@ export class Enemy {
         this.targetPosition = null;
         this.isWandering = false;
 
-        // Aggression (goblins are aggressive)
-        this.aggressive = (enemyType === 'GOBLIN_2' || enemyType === 'GOBLIN_5');
-        this.aggroRange = 10;
+        // Aggression (from ENEMY_DATA)
+        this.aggressive = stats.aggressive || false;
+        this.aggroRange = stats.aggroRange || 10;
 
         // Drop table
         this.dropTable = this.getDropTable();
@@ -81,27 +88,25 @@ export class Enemy {
     createMesh() {
         const group = new THREE.Group();
 
-        let bodyColor, size;
+        // Use color and size from ENEMY_DATA
+        const bodyColor = this.enemyData.color || 0xFF0000;
+        const size = this.enemyData.size || 0.6;
 
-        switch (this.enemyType) {
-            case 'CHICKEN':
-                bodyColor = 0xFFFFCC;
-                size = 0.5;
-                this.createChickenMesh(group, size);
-                break;
-            case 'COW':
-                bodyColor = 0xA0826D;
-                size = 1.2;
-                this.createCowMesh(group, size);
-                break;
-            case 'GOBLIN_2':
-            case 'GOBLIN_5':
-                bodyColor = 0x6B8E23;
-                size = 0.8;
-                this.createGoblinMesh(group, size);
-                break;
-            default:
-                this.createGenericMesh(group, 0xFF0000, 0.6);
+        // Determine which mesh to create based on enemy type
+        if (this.enemyType.includes('CHICKEN')) {
+            this.createChickenMesh(group, size);
+        } else if (this.enemyType.includes('COW')) {
+            this.createCowMesh(group, size);
+        } else if (this.enemyType.includes('GOBLIN')) {
+            this.createGoblinMesh(group, size);
+        } else if (this.enemyType.includes('RAT')) {
+            this.createGenericMesh(group, bodyColor, size);
+        } else if (this.enemyType.includes('SPIDER')) {
+            this.createGenericMesh(group, bodyColor, size);
+        } else if (this.enemyType.includes('SHEEP')) {
+            this.createGenericMesh(group, bodyColor, size);
+        } else {
+            this.createGenericMesh(group, bodyColor, size);
         }
 
         // HP bar (above creature)

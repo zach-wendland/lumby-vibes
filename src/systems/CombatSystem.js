@@ -2,7 +2,7 @@
  * CombatSystem - RuneScape-style combat mechanics
  */
 
-import { ATTACK_COOLDOWN, COMBAT_RANGE, SKILLS } from '../utils/Constants.js';
+import { ATTACK_COOLDOWN, COMBAT_RANGE, SKILLS, ITEMS } from '../utils/Constants.js';
 import { XPCalculator } from '../utils/XPCalculator.js';
 
 export class CombatSystem {
@@ -130,8 +130,13 @@ export class CombatSystem {
         const defenceLeveledUp = this.player.addXP(SKILLS.DEFENCE, xpPerSkill);
         const hitpointsLeveledUp = this.player.addXP(SKILLS.HITPOINTS, Math.floor(xpPerSkill / 3));
 
-        // Generate loot
-        const loot = enemy.die();
+        // Mark enemy as dead
+        enemy.die();
+
+        // Generate loot using the LootSystem
+        const loot = this.gameLogic.lootSystem
+            ? this.gameLogic.lootSystem.generateLoot(enemy.enemyId || enemy.type)
+            : [];
 
         this.gameLogic.ui.addMessage(
             `You defeated ${enemy.name}! You gain ${xpGained} XP.`,
@@ -141,12 +146,20 @@ export class CombatSystem {
         // Add loot to inventory
         if (loot.length > 0) {
             for (const drop of loot) {
-                const added = this.player.addItem(drop.item, drop.count);
-                if (added) {
-                    this.gameLogic.ui.addMessage(
-                        `You receive ${drop.count}x ${drop.item.name}.`,
-                        'game'
-                    );
+                // Convert item name to item object
+                const itemKey = drop.item.toUpperCase().replace(/ /g, '_');
+                const itemObj = ITEMS[itemKey];
+
+                if (itemObj) {
+                    const added = this.player.addItem(itemObj, drop.quantity);
+                    if (added) {
+                        this.gameLogic.ui.addMessage(
+                            `You receive ${drop.quantity}x ${itemObj.name}.`,
+                            'game'
+                        );
+                    }
+                } else {
+                    console.warn(`Unknown item: ${drop.item}`);
                 }
             }
             this.gameLogic.ui.updateInventory();
