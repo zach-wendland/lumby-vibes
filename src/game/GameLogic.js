@@ -7,6 +7,9 @@ import { Player } from '../entities/Player.js';
 import { Lumbridge } from '../world/Lumbridge.js';
 import { CombatSystem } from '../systems/CombatSystem.js';
 import { SkillsSystem } from '../systems/SkillsSystem.js';
+import { QuestSystem } from '../systems/QuestSystem.js';
+import { LootSystem } from '../systems/LootSystem.js';
+import { ShopSystem } from '../systems/ShopSystem.js';
 import { UIManager } from '../ui/UIManager.js';
 import { CAMERA } from '../utils/Constants.js';
 
@@ -17,6 +20,9 @@ export class GameLogic {
         this.world = null;
         this.combatSystem = null;
         this.skillsSystem = null;
+        this.questSystem = null;
+        this.lootSystem = null;
+        this.shopSystem = null;
         this.ui = null;
 
         this.camera = null;
@@ -53,6 +59,9 @@ export class GameLogic {
         // Create systems
         this.combatSystem = new CombatSystem(this);
         this.skillsSystem = new SkillsSystem(this);
+        this.questSystem = new QuestSystem(this.player);
+        this.lootSystem = new LootSystem(this);
+        this.shopSystem = new ShopSystem(this);
 
         // Add world resources to skills system
         for (const resource of this.world.resources) {
@@ -206,7 +215,12 @@ export class GameLogic {
             } else if (type === 'npc') {
                 const npc = object.userData.entity || object.parent?.userData?.entity;
                 if (npc) {
-                    const dialogue = npc.talk();
+                    // Check for quest-related dialogue
+                    const questDialogue = this.questSystem
+                        ? this.questSystem.getNPCDialogue(npc.npcId || npc.name, this.player)
+                        : null;
+
+                    const dialogue = questDialogue || npc.talk();
                     this.ui.addMessage(`${npc.name}: ${dialogue}`, 'npc');
                 }
             } else if (type === 'resource') {
@@ -229,13 +243,38 @@ export class GameLogic {
             } else if (type === 'npc') {
                 const npc = object.userData.entity || object.parent?.userData?.entity;
                 if (npc) {
-                    this.showContextMenu(mouseX, mouseY, [
+                    const menuOptions = [];
+
+                    // Add quest options if available
+                    if (this.questSystem) {
+                        const questOptions = this.questSystem.getQuestOptions(npc.npcId || npc.name, this.player);
+                        menuOptions.push(...questOptions.map(opt => ({
+                            label: opt.label,
+                            action: () => {
+                                const result = this.questSystem.handleQuestInteraction(opt.questId, opt.action, this.player);
+                                if (result && result.message) {
+                                    this.ui.addMessage(`${npc.name}: ${result.message}`, 'npc');
+                                }
+                                if (result && result.updateUI) {
+                                    this.ui.updateStats();
+                                }
+                            }
+                        })));
+                    }
+
+                    // Add standard talk option
+                    menuOptions.push(
                         { label: 'Talk-to', action: () => {
-                            const dialogue = npc.talk();
+                            const questDialogue = this.questSystem
+                                ? this.questSystem.getNPCDialogue(npc.npcId || npc.name, this.player)
+                                : null;
+                            const dialogue = questDialogue || npc.talk();
                             this.ui.addMessage(`${npc.name}: ${dialogue}`, 'npc');
                         }},
                         { label: 'Examine', action: () => this.ui.addMessage(`This is ${npc.name}.`, 'game') }
-                    ]);
+                    );
+
+                    this.showContextMenu(mouseX, mouseY, menuOptions);
                 }
             } else if (type === 'resource') {
                 const resource = object.userData.resource || object.parent?.userData?.resource;

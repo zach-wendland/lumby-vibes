@@ -391,6 +391,90 @@ export class QuestSystem {
     getTotalQuestPoints() {
         return this.player.questPoints || 0;
     }
+
+    /**
+     * Get dialogue from NPC based on quest status
+     */
+    getNPCDialogue(npcId, player) {
+        // Find quests associated with this NPC
+        for (const [questId, quest] of this.questData.entries()) {
+            if (quest.startNPC === npcId || quest.startNPC.toLowerCase() === npcId.toLowerCase()) {
+                if (quest.status === QUEST_STATUS.NOT_STARTED) {
+                    return `Would you like to help me? (Start ${quest.name})`;
+                } else if (quest.status === QUEST_STATUS.IN_PROGRESS) {
+                    const stage = quest.stages[quest.currentStage];
+                    return stage ? stage.description : 'How is the quest going?';
+                } else if (quest.status === QUEST_STATUS.COMPLETED) {
+                    return 'Thank you for your help!';
+                }
+            }
+        }
+        return null; // Use default NPC dialogue
+    }
+
+    /**
+     * Get quest-related options for NPC context menu
+     */
+    getQuestOptions(npcId, player) {
+        const options = [];
+
+        for (const [questId, quest] of this.questData.entries()) {
+            if (quest.startNPC === npcId || quest.startNPC.toLowerCase() === npcId.toLowerCase()) {
+                if (quest.status === QUEST_STATUS.NOT_STARTED) {
+                    const canStart = this.canStartQuest(questId);
+                    if (canStart.can) {
+                        options.push({
+                            label: `Start ${quest.name}`,
+                            questId: quest.id,
+                            action: 'start'
+                        });
+                    }
+                } else if (quest.status === QUEST_STATUS.IN_PROGRESS) {
+                    options.push({
+                        label: `Continue ${quest.name}`,
+                        questId: quest.id,
+                        action: 'continue'
+                    });
+                }
+            }
+        }
+
+        return options;
+    }
+
+    /**
+     * Handle quest interaction (start, continue, complete)
+     */
+    handleQuestInteraction(questId, action, player) {
+        if (action === 'start') {
+            const result = this.startQuest(questId);
+            if (result.success) {
+                return {
+                    message: result.message || 'Quest started!',
+                    updateUI: true
+                };
+            } else {
+                return {
+                    message: result.message || 'Cannot start quest.',
+                    updateUI: false
+                };
+            }
+        } else if (action === 'continue') {
+            const quest = this.questData.get(questId);
+            if (quest && quest.status === QUEST_STATUS.IN_PROGRESS) {
+                const stage = quest.stages[quest.currentStage];
+                return {
+                    message: stage ? stage.description : 'Continue your quest.',
+                    updateUI: false
+                };
+            }
+        }
+
+        return {
+            message: 'Quest interaction not available.',
+            updateUI: false
+        };
+    }
 }
 
 export default QuestSystem;
