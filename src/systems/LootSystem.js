@@ -91,7 +91,8 @@ export const DROP_TABLES = {
 };
 
 export class LootSystem {
-    constructor() {
+    constructor(gameLogic) {
+        this.gameLogic = gameLogic;
         this.lootHistory = [];
     }
 
@@ -99,8 +100,17 @@ export class LootSystem {
      * Generate loot from enemy death
      */
     generateLoot(enemyType) {
+        // Validate input
+        if (!enemyType || typeof enemyType !== 'string') {
+            console.warn('[LootSystem] Invalid enemy type:', enemyType);
+            return [];
+        }
+
         const dropTable = DROP_TABLES[enemyType];
-        if (!dropTable) return [];
+        if (!dropTable) {
+            console.warn('[LootSystem] No drop table found for enemy type:', enemyType);
+            return [];
+        }
 
         const loot = [];
 
@@ -145,25 +155,17 @@ export class LootSystem {
     }
 
     /**
-     * Roll on the rare drop table
+     * Roll on the rare drop table (OSRS-accurate)
+     * Each item is rolled independently with its own chance
+     * Can return empty array if no items hit
      */
     rollRareDropTable() {
         const rareLoot = [];
         const rareTable = DROP_TABLES.RARE_DROP_TABLE;
 
-        // Calculate total weight
-        let totalWeight = 0;
-        for (const dropData of Object.values(rareTable)) {
-            totalWeight += dropData.chance;
-        }
-
-        // Roll random value
-        let roll = Math.random() * totalWeight;
-
-        // Determine drop
+        // Roll each item independently (OSRS way)
         for (const [itemName, dropData] of Object.entries(rareTable)) {
-            roll -= dropData.chance;
-            if (roll <= 0) {
+            if (Math.random() < dropData.chance) {
                 let quantity;
                 if (Array.isArray(dropData.quantity)) {
                     const [min, max] = dropData.quantity;
@@ -178,6 +180,7 @@ export class LootSystem {
                     rarity: dropData.rarity,
                     isRare: true
                 });
+                // In OSRS, only first hit from RDT is given
                 break;
             }
         }

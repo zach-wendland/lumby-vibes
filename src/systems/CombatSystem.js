@@ -119,27 +119,27 @@ export class CombatSystem {
      * Handle enemy kill
      */
     handleKill(enemy) {
-        // Award XP
-        const xpGained = enemy.xpReward;
+        // Award XP (OSRS-accurate: full XP for each combat skill)
+        const xpRewards = enemy.xpRewards;
 
-        // Split XP between attack, strength, defence, and hitpoints
-        const xpPerSkill = Math.floor(xpGained / 3);
-
-        const attackLeveledUp = this.player.addXP(SKILLS.ATTACK, xpPerSkill);
-        const strengthLeveledUp = this.player.addXP(SKILLS.STRENGTH, xpPerSkill);
-        const defenceLeveledUp = this.player.addXP(SKILLS.DEFENCE, xpPerSkill);
-        const hitpointsLeveledUp = this.player.addXP(SKILLS.HITPOINTS, Math.floor(xpPerSkill / 3));
+        const attackLeveledUp = this.player.addXP(SKILLS.ATTACK, xpRewards.attack);
+        const strengthLeveledUp = this.player.addXP(SKILLS.STRENGTH, xpRewards.strength);
+        const defenceLeveledUp = this.player.addXP(SKILLS.DEFENCE, xpRewards.defence);
+        const hitpointsLeveledUp = this.player.addXP(SKILLS.HITPOINTS, xpRewards.hitpoints);
 
         // Mark enemy as dead
         enemy.die();
 
         // Generate loot using the LootSystem
         const loot = this.gameLogic.lootSystem
-            ? this.gameLogic.lootSystem.generateLoot(enemy.enemyId || enemy.type)
+            ? this.gameLogic.lootSystem.generateLoot(enemy.enemyId || enemy.enemyType)
             : [];
 
+        // Calculate total XP gained
+        const totalXP = xpRewards.attack + xpRewards.strength + xpRewards.defence + xpRewards.hitpoints;
+
         this.gameLogic.ui.addMessage(
-            `You defeated ${enemy.name}! You gain ${xpGained} XP.`,
+            `You defeated ${enemy.name}! You gain ${totalXP.toFixed(1)} total XP.`,
             'game'
         );
 

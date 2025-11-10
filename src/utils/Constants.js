@@ -139,12 +139,17 @@ export const NPC_TYPES = {
 };
 
 // Enemy Types
+// Legacy ENEMY_TYPES for backwards compatibility (prefer ENEMY_DATA)
 export const ENEMY_TYPES = {
     CHICKEN: { name: 'Chicken', level: 1, hp: 3, xp: 5 },
     COW: { name: 'Cow', level: 2, hp: 8, xp: 8 },
+    GIANT_RAT: { name: 'Giant rat', level: 3, hp: 6, xp: 6 },
+    // New standardized naming
+    GOBLIN_LEVEL_2: { name: 'Goblin', level: 2, hp: 5, xp: 6 },
+    GOBLIN_LEVEL_5: { name: 'Goblin', level: 5, hp: 13, xp: 12 },
+    // Old naming (deprecated, kept for compatibility)
     GOBLIN_2: { name: 'Goblin', level: 2, hp: 5, xp: 6 },
-    GOBLIN_5: { name: 'Goblin', level: 5, hp: 13, xp: 12 },
-    GIANT_RAT: { name: 'Giant rat', level: 3, hp: 6, xp: 6 }
+    GOBLIN_5: { name: 'Goblin', level: 5, hp: 13, xp: 12 }
 };
 
 // Building types

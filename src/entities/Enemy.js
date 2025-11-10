@@ -2,7 +2,7 @@
  * Enemy - Hostile creatures (Chickens, Cows, Goblins, etc.)
  */
 
-import { ENEMY_SPEED, ENEMY_TYPES, ITEMS } from '../utils/Constants.js';
+import { ENEMY_SPEED, ENEMY_TYPES } from '../utils/Constants.js';
 import { ENEMY_DATA } from '../data/EnemyData.js';
 
 export class Enemy {
@@ -19,9 +19,13 @@ export class Enemy {
         this.level = stats.level || 1;
         this.maxHP = stats.hitpoints || stats.hp || 10;
         this.currentHP = this.maxHP;
-        this.xpReward = stats.xpRewards ?
-            (stats.xpRewards.attack + stats.xpRewards.strength + stats.xpRewards.defence) / 3 :
-            (stats.xp || 10);
+        // Store XP rewards per skill (OSRS gives full XP for each, not divided)
+        this.xpRewards = stats.xpRewards || {
+            attack: stats.xp || 10,
+            strength: stats.xp || 10,
+            defence: stats.xp || 10,
+            hitpoints: (stats.xp || 10) / 3
+        };
         this.speed = ENEMY_SPEED;
 
         // Store full enemy data for reference
@@ -46,40 +50,7 @@ export class Enemy {
         this.aggressive = stats.aggressive || false;
         this.aggroRange = stats.aggroRange || 10;
 
-        // Drop table
-        this.dropTable = this.getDropTable();
-
         this.createMesh();
-    }
-
-    /**
-     * Get drop table for enemy type
-     */
-    getDropTable() {
-        switch (this.enemyType) {
-            case 'CHICKEN':
-                return [
-                    { item: ITEMS.BONES, chance: 1.0 },
-                    { item: ITEMS.FEATHER, chance: 0.5, max: 15 },
-                    { item: ITEMS.RAW_CHICKEN, chance: 1.0 }
-                ];
-            case 'COW':
-                return [
-                    { item: ITEMS.BONES, chance: 1.0 },
-                    { item: ITEMS.COWHIDE, chance: 1.0 },
-                    { item: ITEMS.RAW_BEEF, chance: 1.0 }
-                ];
-            case 'GOBLIN_2':
-            case 'GOBLIN_5':
-                return [
-                    { item: ITEMS.BONES, chance: 1.0 },
-                    { item: ITEMS.COINS, chance: 0.8, max: 15 }
-                ];
-            default:
-                return [
-                    { item: ITEMS.BONES, chance: 1.0 }
-                ];
-        }
     }
 
     /**
@@ -327,6 +298,7 @@ export class Enemy {
 
     /**
      * Die and start respawn timer
+     * Loot generation is handled by LootSystem
      */
     die() {
         this.isDead = true;
@@ -337,23 +309,6 @@ export class Enemy {
         if (this.mesh) {
             this.mesh.visible = false;
         }
-
-        // Generate loot
-        return this.generateLoot();
-    }
-
-    /**
-     * Generate loot drops
-     */
-    generateLoot() {
-        const loot = [];
-        for (const drop of this.dropTable) {
-            if (Math.random() < drop.chance) {
-                const count = drop.max ? Math.floor(Math.random() * drop.max) + 1 : 1;
-                loot.push({ item: drop.item, count });
-            }
-        }
-        return loot;
     }
 
     /**
