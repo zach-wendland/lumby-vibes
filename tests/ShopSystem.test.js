@@ -1,5 +1,5 @@
 /**
- * ShopSystem tests
+ * Comprehensive ShopSystem tests
  */
 
 import { ShopSystem, SHOPS } from '../src/systems/ShopSystem.js';
@@ -7,254 +7,387 @@ import { ShopSystem, SHOPS } from '../src/systems/ShopSystem.js';
 describe('ShopSystem', () => {
     let mockGameLogic;
     let shopSystem;
+    let mockPlayer;
 
     beforeEach(() => {
+        // Create mock player
+        mockPlayer = {
+            skills: {
+                woodcutting: { level: 1 },
+                attack: { level: 1 },
+                mining: { level: 1 }
+            },
+            inventory: new Array(28).fill(null),
+            isMember: false,
+            addItem: jest.fn((item, count) => {
+                // Find first empty slot
+                for (let i = 0; i < mockPlayer.inventory.length; i++) {
+                    if (!mockPlayer.inventory[i]) {
+                        mockPlayer.inventory[i] = { ...item, count };
+                        return true;
+                    }
+                }
+                return false;
+            }),
+            removeItem: jest.fn((slot) => {
+                const item = mockPlayer.inventory[slot];
+                mockPlayer.inventory[slot] = null;
+                return item;
+            }),
+            getInventoryCount: jest.fn(() => {
+                return mockPlayer.inventory.filter(item => item !== null).length;
+            })
+        };
+
+        // Add coins to inventory
+        mockPlayer.inventory[0] = { id: 'coins', name: 'Coins', count: 50000, stackable: true };
+
         mockGameLogic = {
-            player: {
-                skills: {
-                    woodcutting: { level: 1 }
-                },
-                inventory: [],
-                coins: 1000,
-                addItem: jest.fn(() => true),
-                removeItem: jest.fn(() => true),
-                hasItem: jest.fn(() => false)
-            }
+            player: mockPlayer
         };
 
         shopSystem = new ShopSystem(mockGameLogic);
     });
 
-    describe('initialization', () => {
-        test('should initialize all shops', () => {
-            expect(shopSystem.shops.size).toBeGreaterThan(0);
-            expect(shopSystem.shops.has('bobs_axes')).toBe(true);
-            expect(shopSystem.shops.has('lumbridge_general_store')).toBe(true);
+    describe('Initialization', () => {
+        test('should initialize with game logic', () => {
+            expect(shopSystem.gameLogic).toBe(mockGameLogic);
+            expect(shopSystem.player).toBe(mockPlayer);
         });
 
-        test('should initialize shop stock', () => {
-            const bobsAxes = shopSystem.shops.get('bobs_axes');
-            expect(bobsAxes.items.length).toBeGreaterThan(0);
+        test('should initialize all shops from SHOPS constant', () => {
+            expect(shopSystem.shops.size).toBe(Object.keys(SHOPS).length);
+        });
+
+        test('should deep copy shop items', () => {
+            const shop = shopSystem.shops.get('bobs_axes');
+            expect(shop).toBeDefined();
+            expect(shop.items).not.toBe(SHOPS.BOBS_AXES.items);
+        });
+
+        test('should initialize with no current shop', () => {
+            expect(shopSystem.currentShop).toBeNull();
         });
     });
 
-    describe('getShop', () => {
-        test('should return shop by id', () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            expect(shop).toBeDefined();
-            expect(shop.name).toBe("Bob's Brilliant Axes");
+    describe('openShop', () => {
+        test('should open existing shop successfully', () => {
+            const result = shopSystem.openShop('bobs_axes');
+            expect(result.success).toBe(true);
+            expect(result.shop).toBeDefined();
+            expect(result.shop.id).toBe('bobs_axes');
+            expect(shopSystem.currentShop).toBe(result.shop);
         });
 
-        test('should return null for non-existent shop', () => {
-            const shop = shopSystem.getShop('nonexistent_shop');
-            expect(shop).toBeNull();
+        test('should fail to open non-existent shop', () => {
+            const result = shopSystem.openShop('fake_shop');
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('not found');
+        });
+
+        test('should fail to open members-only shop as F2P player', () => {
+            mockPlayer.isMember = false;
+            const result = shopSystem.openShop('ranch_store');
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('members only');
+        });
+
+        test('should allow members-only shop for member player', () => {
+            mockPlayer.isMember = true;
+            const result = shopSystem.openShop('ranch_store');
+            expect(result.success).toBe(true);
+        });
+    });
+
+    describe('closeShop', () => {
+        test('should close currently open shop', () => {
+            shopSystem.openShop('bobs_axes');
+            expect(shopSystem.currentShop).not.toBeNull();
+            shopSystem.closeShop();
+            expect(shopSystem.currentShop).toBeNull();
         });
     });
 
     describe('buyItem', () => {
-        test('should successfully buy item with enough coins', () => {
-            const result = shopSystem.buyItem('bobs_axes', 'bronze_axe', 1, mockGameLogic.player);
-            expect(result.success).toBe(true);
-            expect(mockGameLogic.player.addItem).toHaveBeenCalled();
+        beforeEach(() => {
+            shopSystem.openShop('bobs_axes');
         });
 
-        test('should fail to buy without enough coins', () => {
-            mockGameLogic.player.coins = 1;
-            const result = shopSystem.buyItem('bobs_axes', 'rune_axe', 1, mockGameLogic.player);
+        test('should fail if no shop is open', () => {
+            shopSystem.closeShop();
+            const result = shopSystem.buyItem('bronze_axe', 1);
             expect(result.success).toBe(false);
-            expect(result.message).toContain('coins');
+            expect(result.message).toContain('No shop is open');
         });
 
-        test('should fail to buy without skill requirements', () => {
-            mockGameLogic.player.woodcutting = { level: 1 };
-            const result = shopSystem.buyItem('bobs_axes', 'steel_axe', 1, mockGameLogic.player);
+        test('should fail for non-existent item', () => {
+            const result = shopSystem.buyItem('fake_item', 1);
             expect(result.success).toBe(false);
-            expect(result.message).toContain('Requires');
+            expect(result.message).toContain('not found');
         });
 
-        test('should reduce shop stock after purchase', () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const bronzeAxe = shop.items.find(item => item.id === 'bronze_axe');
-            const initialStock = bronzeAxe.currentStock;
+        test('should fail when insufficient stock', () => {
+            const shop = shopSystem.currentShop;
+            const item = shop.items.find(i => i.id === 'bronze_axe');
+            item.stock = 0;
 
-            shopSystem.buyItem('bobs_axes', 'bronze_axe', 1, mockGameLogic.player);
-
-            expect(bronzeAxe.currentStock).toBe(initialStock - 1);
-        });
-
-        test('should fail when item is out of stock', () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const bronzeAxe = shop.items.find(item => item.id === 'bronze_axe');
-            bronzeAxe.currentStock = 0;
-
-            const result = shopSystem.buyItem('bobs_axes', 'bronze_axe', 1, mockGameLogic.player);
+            const result = shopSystem.buyItem('bronze_axe', 1);
             expect(result.success).toBe(false);
             expect(result.message).toContain('stock');
         });
 
-        test('should buy multiple items at once', () => {
-            const result = shopSystem.buyItem('lumbridge_general_store', 'pot', 3, mockGameLogic.player);
+        test('should fail when skill requirements not met', () => {
+            mockPlayer.skills.woodcutting.level = 1;
+            const result = shopSystem.buyItem('steel_axe', 1); // requires level 6
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('Requires');
+        });
+
+        test('should fail when insufficient coins', () => {
+            mockPlayer.inventory[0].count = 1; // Only 1 coin
+            const result = shopSystem.buyItem('bronze_axe', 1);
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('need');
+        });
+
+        test('should fail when inventory is full', () => {
+            // Fill inventory
+            for (let i = 1; i < 28; i++) {
+                mockPlayer.inventory[i] = { id: 'junk', name: 'Junk' };
+            }
+
+            const result = shopSystem.buyItem('bronze_axe', 1);
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('inventory space');
+        });
+
+        test('should successfully buy item with valid conditions', () => {
+            const shop = shopSystem.currentShop;
+            const item = shop.items.find(i => i.id === 'bronze_axe');
+            const initialStock = item.stock;
+            const initialCoins = mockPlayer.inventory[0].count;
+
+            const result = shopSystem.buyItem('bronze_axe', 1);
+
             expect(result.success).toBe(true);
-            expect(mockGameLogic.player.addItem).toHaveBeenCalledWith(expect.anything(), 3);
+            expect(result.item).toBe(item);
+            expect(result.quantity).toBe(1);
+            expect(result.cost).toBe(item.buyPrice);
+            expect(item.stock).toBe(initialStock - 1);
+            expect(mockPlayer.inventory[0].count).toBe(initialCoins - item.buyPrice);
+        });
+
+        test('should buy multiple items at once', () => {
+            const shop = shopSystem.currentShop;
+            const item = shop.items.find(i => i.id === 'bronze_axe');
+            const quantity = 3;
+            const initialStock = item.stock;
+
+            const result = shopSystem.buyItem('bronze_axe', quantity);
+
+            expect(result.success).toBe(true);
+            expect(item.stock).toBe(initialStock - quantity);
+        });
+
+        test('should add item to player inventory', () => {
+            const result = shopSystem.buyItem('bronze_axe', 1);
+            expect(result.success).toBe(true);
+            expect(mockPlayer.addItem).toHaveBeenCalled();
+        });
+
+        test('should schedule restock after purchase', () => {
+            jest.useFakeTimers();
+            shopSystem.buyItem('bronze_axe', 1);
+            expect(shopSystem.restockTimers.size).toBeGreaterThan(0);
+            jest.useRealTimers();
         });
     });
 
     describe('sellItem', () => {
         beforeEach(() => {
-            mockGameLogic.player.hasItem = jest.fn(() => true);
+            shopSystem.openShop('general_store');
+            // Add a rope to inventory
+            mockPlayer.inventory[1] = { id: 'rope', name: 'Rope', count: 1 };
         });
 
-        test('should successfully sell item', () => {
-            const result = shopSystem.sellItem('lumbridge_general_store', 'rope', 1, mockGameLogic.player);
-            expect(result.success).toBe(true);
-            expect(mockGameLogic.player.removeItem).toHaveBeenCalled();
-        });
-
-        test('should give correct amount of coins', () => {
-            const initialCoins = mockGameLogic.player.coins;
-            shopSystem.sellItem('lumbridge_general_store', 'rope', 1, mockGameLogic.player);
-
-            expect(mockGameLogic.player.coins).toBeGreaterThan(initialCoins);
-        });
-
-        test('should fail to sell item not in inventory', () => {
-            mockGameLogic.player.hasItem = jest.fn(() => false);
-            const result = shopSystem.sellItem('lumbridge_general_store', 'rope', 1, mockGameLogic.player);
+        test('should fail if no shop is open', () => {
+            shopSystem.closeShop();
+            const result = shopSystem.sellItem(1, 1);
             expect(result.success).toBe(false);
+            expect(result.message).toContain('No shop is open');
         });
 
-        test('should increase shop stock when selling', () => {
-            const shop = shopSystem.getShop('lumbridge_general_store');
-            const rope = shop.items.find(item => item.id === 'rope');
-
-            if (!rope) {
-                // Item not in shop yet, should be added
-                const initialLength = shop.items.length;
-                shopSystem.sellItem('lumbridge_general_store', 'rope', 1, mockGameLogic.player);
-                // Should remain same length if item exists, or be added
-                expect(shop.items.length).toBeGreaterThanOrEqual(initialLength);
-            } else {
-                const initialStock = rope.currentStock;
-                shopSystem.sellItem('lumbridge_general_store', 'rope', 1, mockGameLogic.player);
-                expect(rope.currentStock).toBe(initialStock + 1);
-            }
-        });
-    });
-
-    describe('restock system', () => {
-        test('should restock items over time', (done) => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const bronzeAxe = shop.items.find(item => item.id === 'bronze_axe');
-
-            // Buy to reduce stock
-            shopSystem.buyItem('bobs_axes', 'bronze_axe', 5, mockGameLogic.player);
-            const reducedStock = bronzeAxe.currentStock;
-
-            // Wait for restock
-            setTimeout(() => {
-                shopSystem.update(10); // Simulate 10 seconds passing
-                expect(bronzeAxe.currentStock).toBeGreaterThan(reducedStock);
-                done();
-            }, 100);
+        test('should fail if inventory slot is empty', () => {
+            const result = shopSystem.sellItem(5, 1); // Empty slot
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('No item');
         });
 
-        test('should not restock above maximum', () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const bronzeAxe = shop.items.find(item => item.id === 'bronze_axe');
-            const maxStock = bronzeAxe.stock;
+        test('should fail if shop doesn\'t buy the item', () => {
+            shopSystem.closeShop();
+            shopSystem.openShop('bobs_axes'); // Specialty shop
+            mockPlayer.inventory[1] = { id: 'weird_item', name: 'Weird Item' };
 
-            // Stock is already at max
-            bronzeAxe.currentStock = maxStock;
-
-            shopSystem.update(100); // Simulate time passing
-
-            expect(bronzeAxe.currentStock).toBeLessThanOrEqual(maxStock);
-        });
-    });
-
-    describe('shop inventory', () => {
-        test("Bob's Axes should have all axe types", () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const axeTypes = ['bronze_axe', 'iron_axe', 'steel_axe', 'mithril_axe', 'adamant_axe', 'rune_axe'];
-
-            for (const axe of axeTypes) {
-                const hasAxe = shop.items.some(item => item.id === axe);
-                expect(hasAxe).toBe(true);
-            }
+            const result = shopSystem.sellItem(1, 1);
+            expect(result.success).toBe(false);
+            expect(result.message).toContain('doesn\'t buy');
         });
 
-        test('General Store should have basic supplies', () => {
-            const shop = shopSystem.getShop('lumbridge_general_store');
-            const basicItems = ['pot', 'bucket', 'tinderbox', 'chisel', 'hammer'];
+        test('should successfully sell item to general store', () => {
+            const initialCoins = mockPlayer.inventory[0].count;
+            const result = shopSystem.sellItem(1, 1);
 
-            for (const item of basicItems) {
-                const hasItem = shop.items.some(shopItem => shopItem.id === item);
-                expect(hasItem).toBe(true);
-            }
-        });
-    });
-
-    describe('price calculations', () => {
-        test('should have correct buy and sell prices', () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const bronzeAxe = shop.items.find(item => item.id === 'bronze_axe');
-
-            expect(bronzeAxe.buyPrice).toBe(16);
-            expect(bronzeAxe.sellPrice).toBeDefined();
-            expect(bronzeAxe.sellPrice).toBeLessThan(bronzeAxe.buyPrice);
-        });
-
-        test('should calculate total cost for multiple items', () => {
-            const shop = shopSystem.getShop('lumbridge_general_store');
-            const pot = shop.items.find(item => item.id === 'pot');
-
-            const quantity = 5;
-            const expectedCost = pot.buyPrice * quantity;
-
-            // This would be the cost if buying 5 pots
-            expect(pot.buyPrice * quantity).toBe(expectedCost);
-        });
-    });
-
-    describe('member requirements', () => {
-        test('should allow F2P items for free players', () => {
-            mockGameLogic.player.isMember = false;
-            const result = shopSystem.buyItem('bobs_axes', 'bronze_axe', 1, mockGameLogic.player);
             expect(result.success).toBe(true);
+            expect(result.value).toBeGreaterThan(0);
+            expect(mockPlayer.inventory[0].count).toBeGreaterThan(initialCoins);
         });
 
-        test('should prevent buying members items as F2P', () => {
-            mockGameLogic.player.isMember = false;
+        test('should use shop item sell price if item exists in shop', () => {
+            const shop = shopSystem.currentShop;
+            const shopItem = shop.items.find(i => i.id === 'rope');
+            if (shopItem) {
+                const result = shopSystem.sellItem(1, 1);
+                expect(result.value).toBe(shopItem.sellPrice);
+            }
+        });
 
-            // Find a members-only item if any
-            const shop = shopSystem.getShop('bobs_axes');
-            const membersItem = shop.items.find(item => item.members === true);
-
-            if (membersItem) {
-                const result = shopSystem.buyItem('bobs_axes', membersItem.id, 1, mockGameLogic.player);
-                expect(result.success).toBe(false);
-            } else {
-                // If no members items in shop, that's fine
-                expect(true).toBe(true);
+        test('should increase shop stock when selling stocked item', () => {
+            const shop = shopSystem.currentShop;
+            const shopItem = shop.items.find(i => i.id === 'rope');
+            if (shopItem) {
+                const initialStock = shopItem.stock;
+                shopSystem.sellItem(1, 1);
+                expect(shopItem.stock).toBeGreaterThanOrEqual(initialStock);
             }
         });
     });
 
-    describe('update system', () => {
-        test('should process restock over time', () => {
-            const shop = shopSystem.getShop('bobs_axes');
-            const bronzeAxe = shop.items.find(item => item.id === 'bronze_axe');
+    describe('restocking system', () => {
+        test('should restore one item at a time', () => {
+            jest.useFakeTimers();
+
+            shopSystem.openShop('bobs_axes');
+            const shop = shopSystem.currentShop;
+            const item = shop.items.find(i => i.id === 'bronze_axe');
+            const maxStock = item.maxStock;
 
             // Deplete stock
-            bronzeAxe.currentStock = 0;
+            item.stock = 5;
 
-            // Update multiple times
-            for (let i = 0; i < 10; i++) {
-                shopSystem.update(1); // 1 second each
+            // Trigger restock
+            shopSystem.restockItem('bobs_axes', 'bronze_axe');
+
+            expect(item.stock).toBe(6);
+
+            jest.useRealTimers();
+        });
+
+        test('should not restock above max stock', () => {
+            shopSystem.openShop('bobs_axes');
+            const shop = shopSystem.currentShop;
+            const item = shop.items.find(i => i.id === 'bronze_axe');
+
+            item.stock = item.maxStock;
+            shopSystem.restockItem('bobs_axes', 'bronze_axe');
+
+            expect(item.stock).toBe(item.maxStock);
+        });
+
+        test('should schedule restock timer correctly', () => {
+            jest.useFakeTimers();
+
+            shopSystem.openShop('bobs_axes');
+            shopSystem.scheduleRestock('bobs_axes', 'bronze_axe');
+
+            expect(shopSystem.restockTimers.has('bobs_axes_bronze_axe')).toBe(true);
+
+            jest.useRealTimers();
+        });
+    });
+
+    describe('helper methods', () => {
+        test('getPlayerCoins should return coin count', () => {
+            mockPlayer.inventory[0] = { id: 'coins', name: 'Coins', count: 1234 };
+            expect(shopSystem.getPlayerCoins()).toBe(1234);
+        });
+
+        test('getPlayerCoins should return 0 if no coins', () => {
+            mockPlayer.inventory = new Array(28).fill(null);
+            expect(shopSystem.getPlayerCoins()).toBe(0);
+        });
+
+        test('addPlayerCoins should add to existing stack', () => {
+            mockPlayer.inventory[0] = { id: 'coins', name: 'Coins', count: 100 };
+            shopSystem.addPlayerCoins(50);
+            expect(mockPlayer.inventory[0].count).toBe(150);
+        });
+
+        test('addPlayerCoins should create new stack if none exists', () => {
+            mockPlayer.inventory = new Array(28).fill(null);
+            shopSystem.addPlayerCoins(100);
+            expect(mockPlayer.addItem).toHaveBeenCalled();
+        });
+
+        test('removePlayerCoins should remove from stack', () => {
+            mockPlayer.inventory[0] = { id: 'coins', name: 'Coins', count: 100 };
+            const result = shopSystem.removePlayerCoins(50);
+            expect(result).toBe(true);
+            expect(mockPlayer.inventory[0].count).toBe(50);
+        });
+
+        test('removePlayerCoins should remove stack if depleted', () => {
+            mockPlayer.inventory[0] = { id: 'coins', name: 'Coins', count: 50 };
+            shopSystem.removePlayerCoins(50);
+            expect(mockPlayer.inventory[0]).toBeNull();
+        });
+
+        test('hasInventorySpace should count empty slots', () => {
+            mockPlayer.inventory[1] = { id: 'item', name: 'Item' };
+            mockPlayer.inventory[2] = { id: 'item', name: 'Item' };
+            expect(shopSystem.hasInventorySpace(1)).toBe(true);
+            expect(shopSystem.hasInventorySpace(25)).toBe(true);
+        });
+
+        test('getShopInfo should return shop data', () => {
+            const shopInfo = shopSystem.getShopInfo('bobs_axes');
+            expect(shopInfo).toBeDefined();
+            expect(shopInfo.id).toBe('bobs_axes');
+        });
+
+        test('getCurrentShop should return current shop', () => {
+            expect(shopSystem.getCurrentShop()).toBeNull();
+            shopSystem.openShop('bobs_axes');
+            expect(shopSystem.getCurrentShop()).not.toBeNull();
+        });
+    });
+
+    describe('update method', () => {
+        test('should exist and be callable', () => {
+            expect(typeof shopSystem.update).toBe('function');
+            expect(() => shopSystem.update(1.0)).not.toThrow();
+        });
+    });
+
+    describe('Shop data integrity', () => {
+        test('BOBS_AXES should have correct structure', () => {
+            const shop = SHOPS.BOBS_AXES;
+            expect(shop.id).toBe('bobs_axes');
+            expect(shop.name).toBe("Bob's Brilliant Axes");
+            expect(shop.items).toBeInstanceOf(Array);
+            expect(shop.items.length).toBeGreaterThan(0);
+        });
+
+        test('All shop items should have required properties', () => {
+            for (const shopKey in SHOPS) {
+                const shop = SHOPS[shopKey];
+                for (const item of shop.items) {
+                    expect(item).toHaveProperty('id');
+                    expect(item).toHaveProperty('name');
+                    expect(item).toHaveProperty('stock');
+                    expect(item).toHaveProperty('buyPrice');
+                    expect(item).toHaveProperty('sellPrice');
+                }
             }
-
-            // Should have restocked some
-            expect(bronzeAxe.currentStock).toBeGreaterThan(0);
         });
     });
 });

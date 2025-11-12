@@ -2,6 +2,7 @@
  * NPC - Non-player characters in Lumbridge
  */
 
+import * as THREE from 'three';
 import { NPC_SPEED, NPC_TYPES, COLORS } from '../utils/Constants.js';
 import { NPC_DATA } from '../data/NPCData.js';
 

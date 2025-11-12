@@ -2,6 +2,7 @@
  * Enemy - Hostile creatures (Chickens, Cows, Goblins, etc.)
  */
 
+import * as THREE from 'three';
 import { ENEMY_SPEED, ENEMY_TYPES, ITEMS } from '../utils/Constants.js';
 import { ENEMY_DATA } from '../data/EnemyData.js';
 

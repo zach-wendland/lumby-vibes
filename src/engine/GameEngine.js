@@ -1,6 +1,8 @@
 /**
  * GameEngine - Core Three.js rendering engine with 32-bit color support
  */
+import * as THREE from 'three';
+
 export class GameEngine {
     constructor() {
         this.scene = null;

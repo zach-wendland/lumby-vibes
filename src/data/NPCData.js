@@ -494,7 +494,7 @@ export const NPC_DATA = {
         name: 'Man',
         title: 'Citizen',
         location: 'Various',
-        examine: 'One of Lumbridge's citizens.',
+        examine: 'One of Lumbridge\'s citizens.',
         count: 5,
         dialogue: {
             greeting: [
@@ -516,7 +516,7 @@ export const NPC_DATA = {
         name: 'Woman',
         title: 'Citizen',
         location: 'Various',
-        examine: 'One of Lumbridge's citizens.',
+        examine: 'One of Lumbridge\'s citizens.',
         count: 5,
         dialogue: {
             greeting: [

@@ -2,6 +2,7 @@
  * Player - Main player character
  */
 
+import * as THREE from 'three';
 import { PLAYER_SPEED, SKILLS, COLORS } from '../utils/Constants.js';
 import { XPCalculator } from '../utils/XPCalculator.js';
 

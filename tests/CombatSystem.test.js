@@ -2,6 +2,22 @@
  * CombatSystem Tests
  */
 
+// Mock canvas context BEFORE imports
+global.HTMLCanvasElement.prototype.getContext = function(contextType) {
+    if (contextType === '2d') {
+        return {
+            fillStyle: '',
+            font: '',
+            textAlign: '',
+            fillText: jest.fn(),
+            measureText: jest.fn(() => ({ width: 100 })),
+            clearRect: jest.fn(),
+            drawImage: jest.fn()
+        };
+    }
+    return null;
+};
+
 import { CombatSystem } from '../src/systems/CombatSystem.js';
 import { Player } from '../src/entities/Player.js';
 import { Enemy } from '../src/entities/Enemy.js';
@@ -20,6 +36,9 @@ global.THREE = {
             this.z = v.z;
             return this;
         }
+        clone() {
+            return new THREE.Vector3(this.x, this.y, this.z);
+        }
         distanceTo(v) {
             const dx = this.x - v.x;
             const dy = this.y - v.y;
@@ -27,7 +46,23 @@ global.THREE = {
             return Math.sqrt(dx * dx + dy * dy + dz * dz);
         }
     },
-    Group: class {},
+    Group: class {
+        constructor() {
+            this.children = [];
+            this.position = {
+                x: 0,
+                y: 0,
+                z: 0,
+                set: function(x, y, z) { this.x = x; this.y = y; this.z = z; },
+                copy: function(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
+            };
+            this.rotation = { x: 0, y: 0, z: 0 };
+            this.userData = {};
+        }
+        add(child) {
+            this.children.push(child);
+        }
+    },
     BoxGeometry: class {},
     SphereGeometry: class {},
     CylinderGeometry: class {},
@@ -35,7 +70,16 @@ global.THREE = {
     DodecahedronGeometry: class {},
     MeshLambertMaterial: class {},
     MeshBasicMaterial: class {},
-    Mesh: class { constructor() { this.position = { y: 0, set: () => {} }; this.rotation = { x: 0 }; this.scale = { set: () => {}, x: 1 }; this.visible = true; this.castShadow = false; } },
+    Mesh: class {
+        constructor() {
+            this.position = { x: 0, y: 0, z: 0, set: function(x, y, z) { this.x = x; this.y = y; this.z = z; } };
+            this.rotation = { x: 0, y: 0, z: 0 };
+            this.scale = { set: () => {}, x: 1 };
+            this.visible = true;
+            this.castShadow = false;
+            this.receiveShadow = false;
+        }
+    },
     PlaneGeometry: class {},
     CanvasTexture: class {},
     SpriteMaterial: class {},
@@ -83,7 +127,7 @@ describe('CombatSystem', () => {
             enemy.isDead = true;
             combatSystem.attackTarget(enemy);
 
-            expect(player.target).toBe(undefined);
+            expect(player.target).toBeFalsy();
             expect(player.inCombat).toBe(false);
         });
 

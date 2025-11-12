@@ -9,7 +9,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.log('Initializing Lumbridge...');
 
     try {
+        console.log('Step 1: Creating GameLogic');
         const game = new GameLogic();
+
+        console.log('Step 2: Initializing game');
         await game.init();
 
         // Make game accessible for debugging
@@ -18,11 +21,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log('Lumbridge initialized successfully!');
     } catch (error) {
         console.error('Failed to initialize game:', error);
+        console.error('Error stack:', error.stack);
 
         const loadingText = document.getElementById('loading-text');
         if (loadingText) {
-            loadingText.textContent = 'Error loading game. Please refresh the page.';
+            loadingText.textContent = `Error: ${error.message}`;
             loadingText.style.color = '#FF0000';
+            loadingText.style.fontSize = '14px';
         }
     }
 });

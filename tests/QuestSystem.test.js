@@ -67,6 +67,7 @@ describe('QuestSystem', () => {
             mockPlayer.skills.thieving.level = 13;
             mockPlayer.skills.mining.level = 17;
             questSystem.completedQuests.add('rune_mysteries');
+            questSystem.completedQuests.add('goblin_diplomacy');
 
             const result = questSystem.canStartQuest('the_lost_tribe');
             expect(result.can).toBe(true);

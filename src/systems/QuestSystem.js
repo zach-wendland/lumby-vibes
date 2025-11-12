@@ -281,7 +281,9 @@ export class QuestSystem {
         if (quest.requirements.quests) {
             for (const reqQuest of quest.requirements.quests) {
                 if (!this.completedQuests.has(reqQuest)) {
-                    return { can: false, reason: `Requires completion of ${QUESTS[reqQuest.toUpperCase()].name}` };
+                    const questKey = reqQuest.toUpperCase ? reqQuest.toUpperCase() : reqQuest;
+                    const questName = QUESTS[questKey]?.name || questKey;
+                    return { can: false, reason: `Requires completion of ${questName}` };
                 }
             }
         }

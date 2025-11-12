@@ -2,6 +2,7 @@
  * GameLogic - Main game controller integrating all systems
  */
 
+import * as THREE from 'three';
 import { GameEngine } from '../engine/GameEngine.js';
 import { Player } from '../entities/Player.js';
 import { Lumbridge } from '../world/Lumbridge.js';
@@ -42,61 +43,83 @@ export class GameLogic {
      * Initialize the game
      */
     async init() {
-        // Initialize engine
-        await this.engine.init();
-        this.engine.updateLoadingProgress(40);
+        try {
+            // Initialize engine
+            console.log('Init: Initializing engine...');
+            await this.engine.init();
+            this.engine.updateLoadingProgress(40);
 
-        // Create player
-        this.player = new Player(0, 0);
-        this.engine.addEntity(this.player);
-        this.engine.updateLoadingProgress(50);
+            // Create player
+            console.log('Init: Creating player...');
+            this.player = new Player(0, 0);
+            this.engine.addEntity(this.player);
+            this.engine.updateLoadingProgress(50);
 
-        // Create world
-        this.world = new Lumbridge(this.engine);
-        this.world.create();
-        this.engine.updateLoadingProgress(70);
+            // Create world
+            console.log('Init: Creating world...');
+            this.world = new Lumbridge(this.engine);
+            this.world.create();
+            this.engine.updateLoadingProgress(70);
 
-        // Create systems
-        this.combatSystem = new CombatSystem(this);
-        this.skillsSystem = new SkillsSystem(this);
-        this.questSystem = new QuestSystem(this.player);
-        this.lootSystem = new LootSystem(this);
-        this.shopSystem = new ShopSystem(this);
+            // Create systems
+            console.log('Init: Creating combat system...');
+            this.combatSystem = new CombatSystem(this);
+            console.log('Init: Creating skills system...');
+            this.skillsSystem = new SkillsSystem(this);
+            console.log('Init: Creating quest system...');
+            this.questSystem = new QuestSystem(this.player);
+            console.log('Init: Creating loot system...');
+            this.lootSystem = new LootSystem(this);
+            console.log('Init: Creating shop system...');
+            this.shopSystem = new ShopSystem(this);
 
-        // Add world resources to skills system
-        for (const resource of this.world.resources) {
-            this.skillsSystem.addResource(resource);
+            // Add world resources to skills system
+            console.log('Init: Adding resources...');
+            for (const resource of this.world.resources) {
+                this.skillsSystem.addResource(resource);
+            }
+            this.engine.updateLoadingProgress(80);
+
+            // Setup camera
+            console.log('Init: Setting up camera...');
+            this.setupCamera();
+            window.gameCamera = this.camera; // For sprite billboarding
+
+            // Setup controls
+            console.log('Init: Setting up controls...');
+            this.setupControls();
+
+            // Initialize UI
+            console.log('Init: Initializing UI...');
+            this.ui = new UIManager(this);
+            this.ui.updateStats();
+            this.ui.updateInventory();
+            this.ui.addMessage('Welcome to Lumbridge!', 'game');
+            this.ui.addMessage('Use WASD or Arrow keys to move, click to interact.', 'system');
+
+            this.engine.updateLoadingProgress(90);
+
+            // Setup update loop
+            console.log('Init: Setting up game loop...');
+            this.engine.onUpdate((delta) => this.update(delta));
+            this.engine.onRender(() => this.render());
+
+            // Setup event listeners
+            console.log('Init: Setting up event listeners...');
+            this.setupEventListeners();
+
+            this.engine.updateLoadingProgress(100);
+            console.log('Init: Hiding loading screen...');
+            this.engine.hideLoadingScreen();
+
+            // Start game loop
+            console.log('Init: Starting game loop...');
+            this.engine.start();
+            console.log('Init: Complete!');
+        } catch (error) {
+            console.error('Init failed at step:', error);
+            throw error;
         }
-        this.engine.updateLoadingProgress(80);
-
-        // Setup camera
-        this.setupCamera();
-        window.gameCamera = this.camera; // For sprite billboarding
-
-        // Setup controls
-        this.setupControls();
-
-        // Initialize UI
-        this.ui = new UIManager(this);
-        this.ui.updateStats();
-        this.ui.updateInventory();
-        this.ui.addMessage('Welcome to Lumbridge!', 'game');
-        this.ui.addMessage('Use WASD or Arrow keys to move, click to interact.', 'system');
-
-        this.engine.updateLoadingProgress(90);
-
-        // Setup update loop
-        this.engine.onUpdate((delta) => this.update(delta));
-        this.engine.onRender(() => this.render());
-
-        // Setup event listeners
-        this.setupEventListeners();
-
-        this.engine.updateLoadingProgress(100);
-        this.engine.hideLoadingScreen();
-
-        // Start game loop
-        this.engine.start();
     }
 
     /**

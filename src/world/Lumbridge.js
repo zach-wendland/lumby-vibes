@@ -2,6 +2,7 @@
  * Lumbridge - World environment and terrain
  */
 
+import * as THREE from 'three';
 import { WORLD_SIZE, TILE_SIZE, COLORS, BUILDINGS, NPC_TYPES, ENEMY_TYPES } from '../utils/Constants.js';
 import { NPC } from '../entities/NPC.js';
 import { Enemy } from '../entities/Enemy.js';
