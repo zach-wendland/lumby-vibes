@@ -62,6 +62,7 @@ export const ITEMS = {
     RAW_MUTTON: { id: 2138, name: 'Raw mutton', stackable: true, value: 40 },
     // Materials
     FEATHER: { id: 314, name: 'Feather', stackable: true, value: 3 },
+    FEATHERS: { id: 314, name: 'Feather', stackable: true, value: 3 }, // Alias for loot system
     COWHIDE: { id: 1739, name: 'Cowhide', stackable: true, value: 150 },
     WOOL: { id: 1737, name: 'Wool', stackable: true, value: 60 },
     BALL_OF_WOOL: { id: 1759, name: 'Ball of wool', stackable: true, value: 80 },
