@@ -60,7 +60,7 @@ export class SkillsSystem {
                     );
                 } else {
                     this.gameLogic.ui.addMessage(
-                        `Your inventory is full!`,
+                        'Your inventory is full!',
                         'game'
                     );
                 }

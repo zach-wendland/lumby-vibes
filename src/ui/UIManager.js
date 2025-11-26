@@ -95,7 +95,7 @@ export class UIManager {
         const hpText = document.getElementById('hp-text');
         if (hpBar && hpText) {
             const hpPercent = (this.player.currentHP / this.player.skills.hitpoints.level) * 100;
-            hpBar.style.width = hpPercent + '%';
+            hpBar.style.width = `${hpPercent  }%`;
             hpText.textContent = `${this.player.currentHP}/${this.player.skills.hitpoints.level}`;
         }
 
@@ -104,7 +104,7 @@ export class UIManager {
         const prayerText = document.getElementById('prayer-text');
         if (prayerBar && prayerText) {
             const prayerPercent = (this.player.currentPrayer / this.player.skills.prayer.level) * 100;
-            prayerBar.style.width = prayerPercent + '%';
+            prayerBar.style.width = `${prayerPercent  }%`;
             prayerText.textContent = `${this.player.currentPrayer}/${this.player.skills.prayer.level}`;
         }
 
@@ -189,8 +189,8 @@ export class UIManager {
             { label: 'Examine', action: () => this.examineItem(slot) }
         ]);
 
-        menu.style.left = event.clientX + 'px';
-        menu.style.top = event.clientY + 'px';
+        menu.style.left = `${event.clientX  }px`;
+        menu.style.top = `${event.clientY  }px`;
         document.body.appendChild(menu);
 
         // Remove menu on click outside

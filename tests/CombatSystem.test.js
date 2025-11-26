@@ -53,8 +53,8 @@ global.THREE = {
                 x: 0,
                 y: 0,
                 z: 0,
-                set: function(x, y, z) { this.x = x; this.y = y; this.z = z; },
-                copy: function(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
+                set(x, y, z) { this.x = x; this.y = y; this.z = z; },
+                copy(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; }
             };
             this.rotation = { x: 0, y: 0, z: 0 };
             this.userData = {};
@@ -72,7 +72,7 @@ global.THREE = {
     MeshBasicMaterial: class {},
     Mesh: class {
         constructor() {
-            this.position = { x: 0, y: 0, z: 0, set: function(x, y, z) { this.x = x; this.y = y; this.z = z; } };
+            this.position = { x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = y; this.z = z; } };
             this.rotation = { x: 0, y: 0, z: 0 };
             this.scale = { set: () => {}, x: 1 };
             this.visible = true;

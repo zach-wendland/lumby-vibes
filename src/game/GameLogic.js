@@ -317,8 +317,8 @@ export class GameLogic {
      */
     showContextMenu(x, y, options) {
         const menu = this.ui.createContextMenu(options);
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
+        menu.style.left = `${x  }px`;
+        menu.style.top = `${y  }px`;
         document.body.appendChild(menu);
 
         setTimeout(() => {

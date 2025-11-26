@@ -467,12 +467,12 @@ export class Lumbridge {
             depleted: false,
             respawnTime: 30,
             respawnTimer: 0,
-            deplete: function() {
+            deplete() {
                 this.depleted = true;
                 this.respawnTimer = this.respawnTime;
                 foliage.visible = false;
             },
-            respawn: function() {
+            respawn() {
                 this.depleted = false;
                 this.hp = this.maxHP;
                 foliage.visible = true;
@@ -504,12 +504,12 @@ export class Lumbridge {
             depleted: false,
             respawnTime: 20,
             respawnTimer: 0,
-            deplete: function() {
+            deplete() {
                 this.depleted = true;
                 this.respawnTimer = this.respawnTime;
                 rock.visible = false;
             },
-            respawn: function() {
+            respawn() {
                 this.depleted = false;
                 this.hp = this.maxHP;
                 rock.visible = true;
@@ -544,8 +544,8 @@ export class Lumbridge {
             depleted: false,
             respawnTime: 0,
             respawnTimer: 0,
-            deplete: function() {},
-            respawn: function() {}
+            deplete() {},
+            respawn() {}
         };
 
         this.engine.scene.add(spot);

@@ -275,7 +275,7 @@ export class LootSystem {
      * Format loot for display
      */
     formatLootMessage(loot) {
-        if (loot.length === 0) return "Nothing was dropped.";
+        if (loot.length === 0) return 'Nothing was dropped.';
 
         const messages = [];
         for (const drop of loot) {

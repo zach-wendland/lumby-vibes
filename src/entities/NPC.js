@@ -79,41 +79,41 @@ export class NPC {
         // Fallback to hardcoded dialogues for compatibility
         const dialogueMap = {
             [NPC_TYPES.DUKE_HORACIO]: [
-                "Greetings! Welcome to my castle.",
-                "I am the Duke of Lumbridge.",
-                "How may I help you today?"
+                'Greetings! Welcome to my castle.',
+                'I am the Duke of Lumbridge.',
+                'How may I help you today?'
             ],
             [NPC_TYPES.HANS]: [
-                "Hello there, adventurer!",
+                'Hello there, adventurer!',
                 "I've been a servant in this castle for many years.",
-                "Feel free to explore Lumbridge!"
+                'Feel free to explore Lumbridge!'
             ],
             [NPC_TYPES.BOB]: [
                 "Welcome to Bob's Brilliant Axes!",
-                "I sell the finest axes in Lumbridge.",
-                "Need anything?"
+                'I sell the finest axes in Lumbridge.',
+                'Need anything?'
             ],
             [NPC_TYPES.COOK]: [
                 "Hello! I'm the castle cook.",
                 "I'm always looking for ingredients.",
-                "Can you help me?"
+                'Can you help me?'
             ],
             [NPC_TYPES.FATHER_AERECK]: [
-                "Welcome to the church.",
-                "May Saradomin bless you.",
-                "Come pray with us."
+                'Welcome to the church.',
+                'May Saradomin bless you.',
+                'Come pray with us.'
             ],
             [NPC_TYPES.DONIE]: [
-                "Welcome to the General Store!",
-                "We sell a bit of everything.",
-                "Take a look around!"
+                'Welcome to the General Store!',
+                'We sell a bit of everything.',
+                'Take a look around!'
             ]
         };
 
         return dialogueMap[this.type] || [
-            "Hello there!",
+            'Hello there!',
             "Nice day, isn't it?",
-            "Enjoy your stay in Lumbridge."
+            'Enjoy your stay in Lumbridge.'
         ];
     }
 

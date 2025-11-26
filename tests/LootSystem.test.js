@@ -296,7 +296,7 @@ describe('LootSystem', () => {
     describe('formatLootMessage', () => {
         test('should return message for empty loot', () => {
             const message = lootSystem.formatLootMessage([]);
-            expect(message).toBe("Nothing was dropped.");
+            expect(message).toBe('Nothing was dropped.');
         });
 
         test('should format single item', () => {

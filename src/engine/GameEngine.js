@@ -113,7 +113,7 @@ export class GameEngine {
         const loadingText = document.getElementById('loading-text');
 
         if (progressBar) {
-            progressBar.style.width = progress + '%';
+            progressBar.style.width = `${progress  }%`;
         }
 
         if (loadingText) {

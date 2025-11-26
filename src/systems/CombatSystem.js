@@ -93,7 +93,7 @@ export class CombatSystem {
         const damage = this.calculateHit(this.player, target);
 
         if (damage === 0) {
-            this.gameLogic.ui.addMessage(`You missed!`, 'game');
+            this.gameLogic.ui.addMessage('You missed!', 'game');
         } else {
             // Deal damage
             const killed = target.takeDamage(damage);

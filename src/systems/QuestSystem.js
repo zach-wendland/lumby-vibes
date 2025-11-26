@@ -20,26 +20,26 @@ export const QUESTS = {
             cooking: 300,
             items: []
         },
-        description: "Help the Lumbridge cook make a birthday cake for Duke Horacio.",
+        description: 'Help the Lumbridge cook make a birthday cake for Duke Horacio.',
         stages: [
             {
                 id: 0,
-                description: "Talk to the Cook in Lumbridge Castle kitchen",
-                objectives: ["Speak with the Cook"]
+                description: 'Talk to the Cook in Lumbridge Castle kitchen',
+                objectives: ['Speak with the Cook']
             },
             {
                 id: 1,
-                description: "Gather ingredients for the cake",
+                description: 'Gather ingredients for the cake',
                 objectives: [
-                    "Get a bucket of milk",
-                    "Get an egg",
-                    "Get a pot of flour"
+                    'Get a bucket of milk',
+                    'Get an egg',
+                    'Get a pot of flour'
                 ]
             },
             {
                 id: 2,
-                description: "Return to the Cook with all ingredients",
-                objectives: ["Give ingredients to the Cook"]
+                description: 'Return to the Cook with all ingredients',
+                objectives: ['Give ingredients to the Cook']
             }
         ],
         startNPC: 'Cook',
@@ -48,7 +48,7 @@ export const QUESTS = {
 
     RUNE_MYSTERIES: {
         id: 'rune_mysteries',
-        name: "Rune Mysteries",
+        name: 'Rune Mysteries',
         difficulty: 'Novice',
         length: 'Short',
         requirements: {},
@@ -58,27 +58,27 @@ export const QUESTS = {
             items: ['Air talisman'],
             unlocks: ['Runecrafting skill']
         },
-        description: "Unlock the secrets of runecrafting by helping the Duke and Wizards.",
+        description: 'Unlock the secrets of runecrafting by helping the Duke and Wizards.',
         stages: [
             {
                 id: 0,
-                description: "Talk to Duke Horacio in Lumbridge Castle",
-                objectives: ["Speak with Duke Horacio on 1st floor"]
+                description: 'Talk to Duke Horacio in Lumbridge Castle',
+                objectives: ['Speak with Duke Horacio on 1st floor']
             },
             {
                 id: 1,
-                description: "Deliver the air talisman to Archmage Sedridor",
-                objectives: ["Go to Wizards' Tower", "Give talisman to Sedridor"]
+                description: 'Deliver the air talisman to Archmage Sedridor',
+                objectives: ["Go to Wizards' Tower", 'Give talisman to Sedridor']
             },
             {
                 id: 2,
-                description: "Take research package to Aubury in Varrock",
-                objectives: ["Travel to Varrock", "Deliver package to Aubury"]
+                description: 'Take research package to Aubury in Varrock',
+                objectives: ['Travel to Varrock', 'Deliver package to Aubury']
             },
             {
                 id: 3,
-                description: "Return to Archmage Sedridor",
-                objectives: ["Return to Wizards' Tower", "Complete quest with Sedridor"]
+                description: 'Return to Archmage Sedridor',
+                objectives: ["Return to Wizards' Tower", 'Complete quest with Sedridor']
             }
         ],
         startNPC: 'Duke Horacio',
@@ -87,7 +87,7 @@ export const QUESTS = {
 
     THE_RESTLESS_GHOST: {
         id: 'the_restless_ghost',
-        name: "The Restless Ghost",
+        name: 'The Restless Ghost',
         difficulty: 'Novice',
         length: 'Short',
         requirements: {},
@@ -96,32 +96,32 @@ export const QUESTS = {
             prayer: 1125,
             items: []
         },
-        description: "Help Father Aereck remove the ghost from Lumbridge graveyard.",
+        description: 'Help Father Aereck remove the ghost from Lumbridge graveyard.',
         stages: [
             {
                 id: 0,
-                description: "Talk to Father Aereck in the church",
-                objectives: ["Speak with Father Aereck"]
+                description: 'Talk to Father Aereck in the church',
+                objectives: ['Speak with Father Aereck']
             },
             {
                 id: 1,
-                description: "Get help from Father Urhney",
-                objectives: ["Go to Lumbridge Swamp", "Talk to Father Urhney", "Receive Amulet of Ghostspeak"]
+                description: 'Get help from Father Urhney',
+                objectives: ['Go to Lumbridge Swamp', 'Talk to Father Urhney', 'Receive Amulet of Ghostspeak']
             },
             {
                 id: 2,
-                description: "Talk to the ghost in the graveyard",
-                objectives: ["Equip Amulet of Ghostspeak", "Open coffin", "Talk to Restless Ghost"]
+                description: 'Talk to the ghost in the graveyard',
+                objectives: ['Equip Amulet of Ghostspeak', 'Open coffin', 'Talk to Restless Ghost']
             },
             {
                 id: 3,
                 description: "Retrieve the ghost's skull",
-                objectives: ["Go to swamp mine", "Search altar to find skull", "Kill Skeleton (optional)"]
+                objectives: ['Go to swamp mine', 'Search altar to find skull', 'Kill Skeleton (optional)']
             },
             {
                 id: 4,
-                description: "Return the skull to the coffin",
-                objectives: ["Put skull in coffin", "Complete quest"]
+                description: 'Return the skull to the coffin',
+                objectives: ['Put skull in coffin', 'Complete quest']
             }
         ],
         startNPC: 'Father Aereck',
@@ -130,7 +130,7 @@ export const QUESTS = {
 
     SHEEP_SHEARER: {
         id: 'sheep_shearer',
-        name: "Sheep Shearer",
+        name: 'Sheep Shearer',
         difficulty: 'Novice',
         length: 'Short',
         requirements: {},
@@ -140,22 +140,22 @@ export const QUESTS = {
             coins: 60,
             items: ['Ball of wool (20)']
         },
-        description: "Help Fred the Farmer by gathering wool from his sheep.",
+        description: 'Help Fred the Farmer by gathering wool from his sheep.',
         stages: [
             {
                 id: 0,
-                description: "Talk to Fred the Farmer",
-                objectives: ["Speak with Fred the Farmer"]
+                description: 'Talk to Fred the Farmer',
+                objectives: ['Speak with Fred the Farmer']
             },
             {
                 id: 1,
-                description: "Shear 20 sheep and collect wool",
-                objectives: ["Gather 20 balls of wool"]
+                description: 'Shear 20 sheep and collect wool',
+                objectives: ['Gather 20 balls of wool']
             },
             {
                 id: 2,
-                description: "Return to Fred the Farmer",
-                objectives: ["Give wool to Fred"]
+                description: 'Return to Fred the Farmer',
+                objectives: ['Give wool to Fred']
             }
         ],
         startNPC: 'Fred the Farmer',
@@ -164,7 +164,7 @@ export const QUESTS = {
 
     THE_LOST_TRIBE: {
         id: 'the_lost_tribe',
-        name: "The Lost Tribe",
+        name: 'The Lost Tribe',
         difficulty: 'Intermediate',
         length: 'Medium',
         requirements: {
@@ -178,27 +178,27 @@ export const QUESTS = {
             thieving: 3000,
             items: ['Peace treaty', 'Mining helmet']
         },
-        description: "Discover the lost goblin tribe beneath Lumbridge.",
+        description: 'Discover the lost goblin tribe beneath Lumbridge.',
         stages: [
             {
                 id: 0,
-                description: "Investigate the cellar",
-                objectives: ["Talk to Duke Horacio about hole in cellar"]
+                description: 'Investigate the cellar',
+                objectives: ['Talk to Duke Horacio about hole in cellar']
             },
             {
                 id: 1,
-                description: "Explore the underground tunnel",
-                objectives: ["Investigate the cellar hole", "Explore Lumbridge caves"]
+                description: 'Explore the underground tunnel',
+                objectives: ['Investigate the cellar hole', 'Explore Lumbridge caves']
             },
             {
                 id: 2,
-                description: "Find the Dorgeshuun tribe",
-                objectives: ["Navigate caves", "Meet Mistag", "Discover Dorgesh-Kaan"]
+                description: 'Find the Dorgeshuun tribe',
+                objectives: ['Navigate caves', 'Meet Mistag', 'Discover Dorgesh-Kaan']
             },
             {
                 id: 3,
-                description: "Negotiate peace treaty",
-                objectives: ["Talk to council", "Return to Duke Horacio", "Complete treaty"]
+                description: 'Negotiate peace treaty',
+                objectives: ['Talk to council', 'Return to Duke Horacio', 'Complete treaty']
             }
         ],
         startNPC: 'Sigmund',
@@ -207,7 +207,7 @@ export const QUESTS = {
 
     X_MARKS_THE_SPOT: {
         id: 'x_marks_the_spot',
-        name: "X Marks the Spot",
+        name: 'X Marks the Spot',
         difficulty: 'Novice',
         length: 'Very Short',
         requirements: {},
@@ -216,22 +216,22 @@ export const QUESTS = {
             antique_lamp: 300, // 3x 300 XP lamps
             items: []
         },
-        description: "Help the Lumbridge instructors get started on your adventure.",
+        description: 'Help the Lumbridge instructors get started on your adventure.',
         stages: [
             {
                 id: 0,
-                description: "Talk to Veos at the Lumbridge docks",
-                objectives: ["Speak with Veos"]
+                description: 'Talk to Veos at the Lumbridge docks',
+                objectives: ['Speak with Veos']
             },
             {
                 id: 1,
-                description: "Follow the treasure map clues",
-                objectives: ["Dig at marked locations", "Find treasure"]
+                description: 'Follow the treasure map clues',
+                objectives: ['Dig at marked locations', 'Find treasure']
             },
             {
                 id: 2,
-                description: "Return to Veos",
-                objectives: ["Complete quest with Veos"]
+                description: 'Return to Veos',
+                objectives: ['Complete quest with Veos']
             }
         ],
         startNPC: 'Veos',
