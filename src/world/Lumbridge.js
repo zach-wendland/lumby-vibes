@@ -3,11 +3,11 @@
  */
 
 import * as THREE from 'three';
-import { WORLD_SIZE, TILE_SIZE, COLORS, BUILDINGS, NPC_TYPES, ENEMY_TYPES } from '../utils/Constants.js';
+import { WORLD_SIZE, COLORS, BUILDINGS, NPC_TYPES } from '../utils/Constants.js';
 import { NPC } from '../entities/NPC.js';
 import { Enemy } from '../entities/Enemy.js';
 import { NPC_DATA } from '../data/NPCData.js';
-import { ENEMY_DATA, SPAWN_LOCATIONS } from '../data/EnemyData.js';
+import { SPAWN_LOCATIONS } from '../data/EnemyData.js';
 
 export class Lumbridge {
     constructor(engine) {
@@ -378,7 +378,7 @@ export class Lumbridge {
         // Spawn enemies based on SPAWN_LOCATIONS from EnemyData
         for (const [enemyType, locations] of Object.entries(SPAWN_LOCATIONS)) {
             for (const location of locations) {
-                const { x, z, count, area } = location;
+                const { x, z, count } = location;
 
                 // Spawn the specified number of enemies in this location
                 for (let i = 0; i < count; i++) {

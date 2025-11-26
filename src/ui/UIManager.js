@@ -2,8 +2,6 @@
  * UIManager - Handle all UI updates and interactions
  */
 
-import { XPCalculator } from '../utils/XPCalculator.js';
-
 export class UIManager {
     constructor(gameLogic) {
         this.gameLogic = gameLogic;
@@ -303,14 +301,16 @@ export class UIManager {
             case 'help':
                 this.addMessage('Available commands: /help, /stats, /pos', 'system');
                 break;
-            case 'stats':
+            case 'stats': {
                 const combat = this.player.getCombatLevel();
                 this.addMessage(`Combat level: ${combat}`, 'system');
                 break;
-            case 'pos':
+            }
+            case 'pos': {
                 const pos = this.player.position;
                 this.addMessage(`Position: (${pos.x.toFixed(1)}, ${pos.z.toFixed(1)})`, 'system');
                 break;
+            }
             default:
                 this.addMessage('Unknown command. Type /help for help.', 'system');
         }

@@ -46,6 +46,7 @@ export default [
                 // Test setup globals
                 global: 'writable',
                 Image: 'readonly',
+                CustomEvent: 'readonly',
             },
         },
         rules: {

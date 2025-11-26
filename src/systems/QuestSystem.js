@@ -250,7 +250,7 @@ export class QuestSystem {
     }
 
     initializeQuests() {
-        for (const [key, quest] of Object.entries(QUESTS)) {
+        for (const [_key, quest] of Object.entries(QUESTS)) {
             this.questData.set(quest.id, {
                 ...quest,
                 status: QUEST_STATUS.NOT_STARTED,
@@ -362,7 +362,7 @@ export class QuestSystem {
 
         // Award items
         if (quest.rewards.items) {
-            for (const itemName of quest.rewards.items) {
+            for (const _itemName of quest.rewards.items) {
                 // TODO: Add items to player inventory
             }
         }
@@ -397,9 +397,9 @@ export class QuestSystem {
     /**
      * Get dialogue from NPC based on quest status
      */
-    getNPCDialogue(npcId, player) {
+    getNPCDialogue(npcId, _player) {
         // Find quests associated with this NPC
-        for (const [questId, quest] of this.questData.entries()) {
+        for (const [_questId, quest] of this.questData.entries()) {
             if (quest.startNPC === npcId || quest.startNPC.toLowerCase() === npcId.toLowerCase()) {
                 if (quest.status === QUEST_STATUS.NOT_STARTED) {
                     return `Would you like to help me? (Start ${quest.name})`;
@@ -417,7 +417,7 @@ export class QuestSystem {
     /**
      * Get quest-related options for NPC context menu
      */
-    getQuestOptions(npcId, player) {
+    getQuestOptions(npcId, _player) {
         const options = [];
 
         for (const [questId, quest] of this.questData.entries()) {
@@ -447,7 +447,7 @@ export class QuestSystem {
     /**
      * Handle quest interaction (start, continue, complete)
      */
-    handleQuestInteraction(questId, action, player) {
+    handleQuestInteraction(questId, action, _player) {
         if (action === 'start') {
             const result = this.startQuest(questId);
             if (result.success) {

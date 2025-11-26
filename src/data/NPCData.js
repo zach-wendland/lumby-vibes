@@ -537,7 +537,7 @@ export const NPC_DATA = {
 
 // Export helper function to get NPC by name
 export function getNPCData(name) {
-    for (const [key, npc] of Object.entries(NPC_DATA)) {
+    for (const [_key, npc] of Object.entries(NPC_DATA)) {
         if (npc.name === name) {
             return npc;
         }

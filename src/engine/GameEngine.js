@@ -200,7 +200,7 @@ export class GameEngine {
     /**
      * Handle click events
      */
-    onClick(event) {
+    onClick(_event) {
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const intersects = this.raycaster.intersectObjects(this.scene.children, true);
 

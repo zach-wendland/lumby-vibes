@@ -125,10 +125,10 @@ export class CombatSystem {
         // Split XP between attack, strength, defence, and hitpoints
         const xpPerSkill = Math.floor(xpGained / 3);
 
-        const attackLeveledUp = this.player.addXP(SKILLS.ATTACK, xpPerSkill);
-        const strengthLeveledUp = this.player.addXP(SKILLS.STRENGTH, xpPerSkill);
-        const defenceLeveledUp = this.player.addXP(SKILLS.DEFENCE, xpPerSkill);
-        const hitpointsLeveledUp = this.player.addXP(SKILLS.HITPOINTS, Math.floor(xpPerSkill / 3));
+        this.player.addXP(SKILLS.ATTACK, xpPerSkill);
+        this.player.addXP(SKILLS.STRENGTH, xpPerSkill);
+        this.player.addXP(SKILLS.DEFENCE, xpPerSkill);
+        this.player.addXP(SKILLS.HITPOINTS, Math.floor(xpPerSkill / 3));
 
         // Mark enemy as dead
         enemy.die();
