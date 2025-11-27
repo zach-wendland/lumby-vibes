@@ -144,7 +144,11 @@ export class Enemy {
     createChickenMesh(group, size) {
         // Body (white/yellow)
         const bodyGeometry = new THREE.SphereGeometry(size * 0.6, 12, 12);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFCC });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0xFFFFCC,
+            roughness: 0.9,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = size * 0.7;
         body.scale.set(1, 1.2, 1);
@@ -160,7 +164,11 @@ export class Enemy {
 
         // Beak (red)
         const beakGeometry = new THREE.ConeGeometry(size * 0.1, size * 0.2, 8);
-        const beakMaterial = new THREE.MeshLambertMaterial({ color: 0xFF6347 });
+        const beakMaterial = new THREE.MeshStandardMaterial({
+            color: 0xFF6347,
+            roughness: 0.6,
+            metalness: 0.0
+        });
         const beak = new THREE.Mesh(beakGeometry, beakMaterial);
         beak.position.set(0, size * 1.0, size * 0.65);
         beak.rotation.x = Math.PI / 2;
@@ -175,7 +183,11 @@ export class Enemy {
     createCowMesh(group, size) {
         // Body (brown)
         const bodyGeometry = new THREE.BoxGeometry(size * 1.2, size * 0.8, size * 0.8);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xA0826D });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0xA0826D,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = size * 0.8;
         body.castShadow = true;
@@ -190,7 +202,11 @@ export class Enemy {
 
         // Legs
         const legGeometry = new THREE.CylinderGeometry(size * 0.15, size * 0.15, size * 0.6, 8);
-        const legMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+        const legMaterial = new THREE.MeshStandardMaterial({
+            color: 0x654321,
+            roughness: 0.7,
+            metalness: 0.0
+        });
 
         const positions = [
             [-size * 0.4, size * 0.3, -size * 0.3],
@@ -215,7 +231,11 @@ export class Enemy {
     createGoblinMesh(group, size) {
         // Body (green)
         const bodyGeometry = new THREE.BoxGeometry(size * 0.7, size, size * 0.5);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x6B8E23 });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x6B8E23,
+            roughness: 0.7,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = size * 1.0;
         body.castShadow = true;
@@ -223,7 +243,11 @@ export class Enemy {
 
         // Head (greenish)
         const headGeometry = new THREE.SphereGeometry(size * 0.35, 12, 12);
-        const headMaterial = new THREE.MeshLambertMaterial({ color: 0x8FBC8F });
+        const headMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8FBC8F,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const head = new THREE.Mesh(headGeometry, headMaterial);
         head.position.y = size * 1.8;
         head.castShadow = true;
@@ -262,7 +286,11 @@ export class Enemy {
      */
     createGenericMesh(group, color, size) {
         const geometry = new THREE.BoxGeometry(size, size, size);
-        const material = new THREE.MeshLambertMaterial({ color });
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.y = size / 2;
         mesh.castShadow = true;

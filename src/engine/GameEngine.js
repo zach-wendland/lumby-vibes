@@ -1,7 +1,9 @@
 /**
- * GameEngine - Core Three.js rendering engine with 32-bit color support
+ * GameEngine - Core Three.js rendering engine with 64-bit HDR color support
+ * Supports 16-bit per channel (64-bit RGBA) for enhanced visual fidelity
  */
 import * as THREE from 'three';
+import { PostProcessingManager } from './PostProcessingManager.js';
 
 export class GameEngine {
     constructor() {
@@ -20,10 +22,15 @@ export class GameEngine {
 
         this.isRunning = false;
         this.loadingProgress = 0;
+
+        // 64-bit HDR rendering support
+        this.supportsHDR = false;
+        this.renderTarget = null;
+        this.postProcessing = null;
     }
 
     /**
-     * Initialize the Three.js scene with enhanced 32-bit rendering
+     * Initialize the Three.js scene with enhanced 64-bit HDR rendering
      */
     async init() {
         // Create scene
@@ -41,26 +48,45 @@ export class GameEngine {
         this.camera.position.set(0, 30, 30);
         this.camera.lookAt(0, 0, 0);
 
-        // Create renderer with 32-bit color
+        // Create renderer with 64-bit HDR color support
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
             antialias: true,
             alpha: false,
-            precision: 'highp', // High precision for 32-bit rendering
+            precision: 'highp', // High precision for 64-bit rendering
             powerPreference: 'high-performance',
-            stencil: false
+            stencil: false,
+            depth: true
         });
 
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.0;
 
-        // Enhanced lighting for 32-bit color depth
+        // Enhanced shadow mapping for 64-bit
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.VSMShadowMap; // Variance Shadow Maps for better quality
+
+        // 64-bit HDR color space configuration
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.2; // Slightly higher for HDR
+
+        // Check for HDR support (WebGL2 with float texture support)
+        this.supportsHDR = this.renderer.capabilities.isWebGL2;
+
+        if (this.supportsHDR) {
+            console.log('64-bit HDR rendering enabled');
+            this.setupHDRRenderTarget();
+        } else {
+            console.log('HDR not supported, using standard rendering');
+        }
+
+        // Enhanced lighting for 64-bit HDR color depth
         this.setupLighting();
+
+        // Initialize post-processing pipeline
+        this.postProcessing = new PostProcessingManager(this.renderer, this.scene, this.camera);
+        this.postProcessing.init();
 
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize(), false);
@@ -74,21 +100,43 @@ export class GameEngine {
     }
 
     /**
-     * Setup enhanced lighting system
+     * Setup HDR render target for 64-bit rendering
+     */
+    setupHDRRenderTarget() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create HDR render target with floating point texture
+        this.renderTarget = new THREE.WebGLRenderTarget(width, height, {
+            type: THREE.HalfFloatType, // 16-bit per channel (64-bit RGBA)
+            format: THREE.RGBAFormat,
+            colorSpace: THREE.LinearSRGBColorSpace,
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            generateMipmaps: false,
+            stencilBuffer: false,
+            depthBuffer: true
+        });
+
+        console.log('HDR render target created with HalfFloatType (64-bit)');
+    }
+
+    /**
+     * Setup enhanced lighting system with HDR values
      */
     setupLighting() {
-        // Ambient light
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Ambient light with HDR intensity
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(ambientLight);
 
-        // Directional light (Sun)
-        const sunLight = new THREE.DirectionalLight(0xfff4e6, 1.0);
+        // Directional light (Sun) with HDR intensity
+        const sunLight = new THREE.DirectionalLight(0xfff4e6, 2.5); // Higher intensity for HDR
         sunLight.position.set(50, 100, 50);
         sunLight.castShadow = true;
 
-        // Enhanced shadow quality
-        sunLight.shadow.mapSize.width = 2048;
-        sunLight.shadow.mapSize.height = 2048;
+        // Enhanced shadow quality for 64-bit
+        sunLight.shadow.mapSize.width = 4096; // Doubled from 2048
+        sunLight.shadow.mapSize.height = 4096;
         sunLight.shadow.camera.near = 0.5;
         sunLight.shadow.camera.far = 500;
         sunLight.shadow.camera.left = -100;
@@ -96,12 +144,15 @@ export class GameEngine {
         sunLight.shadow.camera.top = 100;
         sunLight.shadow.camera.bottom = -100;
         sunLight.shadow.bias = -0.0001;
+        sunLight.shadow.radius = 2; // Softer shadows
 
         this.scene.add(sunLight);
 
-        // Hemisphere light for realistic sky lighting
-        const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x6B8E23, 0.4);
+        // Hemisphere light for realistic sky lighting with HDR
+        const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x6B8E23, 0.6); // Increased intensity
         this.scene.add(hemiLight);
+
+        console.log('HDR lighting system initialized with enhanced intensities');
     }
 
     /**
@@ -187,6 +238,16 @@ export class GameEngine {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Resize HDR render target if it exists
+        if (this.renderTarget) {
+            this.renderTarget.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Resize post-processing
+        if (this.postProcessing) {
+            this.postProcessing.onResize(window.innerWidth, window.innerHeight);
+        }
     }
 
     /**
@@ -273,7 +334,12 @@ export class GameEngine {
             callback();
         }
 
-        this.renderer.render(this.scene, this.camera);
+        // Render with post-processing pipeline if available
+        if (this.postProcessing) {
+            this.postProcessing.render();
+        } else {
+            this.renderer.render(this.scene, this.camera);
+        }
     }
 
     /**

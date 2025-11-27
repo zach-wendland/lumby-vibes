@@ -71,23 +71,31 @@ export class Player {
     }
 
     /**
-     * Create 3D player mesh
+     * Create 3D player mesh with PBR materials for 64-bit HDR rendering
      */
     createMesh() {
         const group = new THREE.Group();
 
-        // Body (blue tunic)
+        // Body (blue tunic) - PBR material
         const bodyGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.6);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: COLORS.PLAYER_BLUE });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.PLAYER_BLUE,
+            roughness: 0.8,  // Cloth-like roughness
+            metalness: 0.0   // Non-metallic fabric
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = 1.2;
         body.castShadow = true;
         body.receiveShadow = true;
         group.add(body);
 
-        // Head (skin color)
+        // Head (skin color) - PBR material
         const headGeometry = new THREE.SphereGeometry(0.4, 16, 16);
-        const headMaterial = new THREE.MeshLambertMaterial({ color: 0xFFDBB5 });
+        const headMaterial = new THREE.MeshStandardMaterial({
+            color: 0xFFDBB5,
+            roughness: 0.9,  // Matte skin
+            metalness: 0.0   // Non-metallic
+        });
         const head = new THREE.Mesh(headGeometry, headMaterial);
         head.position.y = 2.2;
         head.castShadow = true;
@@ -105,9 +113,13 @@ export class Player {
         rightEye.position.set(0.15, 2.25, 0.35);
         group.add(rightEye);
 
-        // Legs
+        // Legs - PBR material
         const legGeometry = new THREE.BoxGeometry(0.3, 0.9, 0.3);
-        const legMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+        const legMaterial = new THREE.MeshStandardMaterial({
+            color: 0x654321,
+            roughness: 0.7,  // Leather-like
+            metalness: 0.0
+        });
 
         const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
         leftLeg.position.set(-0.25, 0.45, 0);
@@ -119,9 +131,13 @@ export class Player {
         rightLeg.castShadow = true;
         group.add(rightLeg);
 
-        // Arms
+        // Arms - PBR material
         const armGeometry = new THREE.BoxGeometry(0.25, 0.9, 0.25);
-        const armMaterial = new THREE.MeshLambertMaterial({ color: COLORS.PLAYER_BLUE });
+        const armMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.PLAYER_BLUE,
+            roughness: 0.8,
+            metalness: 0.0
+        });
 
         const leftArm = new THREE.Mesh(armGeometry, armMaterial);
         leftArm.position.set(-0.55, 1.3, 0);

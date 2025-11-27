@@ -18,7 +18,9 @@
       "Bash(git log:*)",
       "Bash(del \"C:\\Users\\lyyud\\lumby-vibes\\products.json\" 2)",
       "Bash(NUL)",
-      "Bash(del NUL 2)"
+      "Bash(del NUL 2)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

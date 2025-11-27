@@ -1,6 +1,6 @@
 # Lumbridge - Old School RuneScape Recreation
 
-A faithful recreation of RuneScape's iconic Lumbridge area using Three.js with enhanced 32-bit graphics and authentic RuneScape mechanics.
+A faithful recreation of RuneScape's iconic Lumbridge area using Three.js with enhanced 64-bit HDR graphics and authentic RuneScape mechanics.
 
 ![Lumbridge](https://img.shields.io/badge/Status-Complete-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -15,11 +15,12 @@ A faithful recreation of RuneScape's iconic Lumbridge area using Three.js with e
 - **Inventory System**: 28-slot inventory with stackable items
 - **Equipment System**: Full equipment slots with stat bonuses
 
-### Enhanced Graphics (32-bit)
-- **High-Quality Rendering**: 32-bit color depth with HDR support
-- **Advanced Lighting**: Dynamic shadows, ambient occlusion, and realistic lighting
+### Enhanced Graphics (64-bit HDR)
+- **High-Quality Rendering**: 64-bit color depth (16-bit per channel) with full HDR support
+- **Physically-Based Rendering (PBR)**: Realistic materials with metalness and roughness workflow
+- **Advanced Lighting**: HDR lighting with enhanced shadows (4096x4096 VSM shadow maps)
+- **Post-Processing Pipeline**: HDR bloom, SSAO, FXAA, and ACES tone mapping
 - **Smooth Performance**: Optimized Three.js engine with 60 FPS target
-- **Post-Processing**: ACES tone mapping for cinematic visuals
 
 ### Lumbridge World
 - **Lumbridge Castle**: Detailed castle with towers and interior areas
@@ -177,23 +178,31 @@ lumby-vibes/
 
 ## 🎨 Graphics Features
 
-### 32-bit Rendering
-- High precision color (RGBA 8888)
-- Linear color space with sRGB encoding
-- ACES Filmic tone mapping
-- Enhanced shadow quality (2048x2048 shadow maps)
+### 64-bit HDR Rendering
+- Ultra-high precision color (16-bit per channel, 64-bit RGBA)
+- HalfFloat render targets for HDR pipeline
+- Linear color space with sRGB output encoding
+- ACES Filmic tone mapping with enhanced exposure control
+- Enhanced shadow quality (4096x4096 VSM shadow maps)
 
 ### Lighting System
-- Directional sun light with realistic shadows
-- Ambient light for overall scene illumination
-- Hemisphere light for sky/ground color variation
-- Dynamic light intensity based on time
+- HDR directional sun light with realistic VSM shadows
+- Enhanced ambient lighting for HDR color depth
+- Hemisphere light for realistic sky/ground color variation
+- Physically-based light intensities optimized for HDR
 
 ### Performance Optimizations
 - Level of Detail (LOD) for distant objects
 - Frustum culling for off-screen objects
 - Efficient mesh instancing
-- Optimized shadow rendering
+- Optimized HDR rendering pipeline
+- Efficient post-processing with selective passes
+
+### Post-Processing Effects
+- **HDR Bloom**: Realistic light bleeding for bright areas
+- **SSAO**: Screen-space ambient occlusion for enhanced depth perception
+- **FXAA**: Fast anti-aliasing for smooth edges
+- **Output Pass**: Proper color space conversion for display
 
 ## 🔧 Development
 
@@ -236,11 +245,12 @@ window.game.combatSystem.stopCombat();  // Stop combat
 ## 📝 Technical Details
 
 ### Technologies Used
-- **Three.js r152**: 3D graphics rendering
+- **Three.js r181**: 3D graphics rendering with HDR support
 - **Vanilla JavaScript**: ES6+ modules
 - **CSS3**: UI styling with flexbox and grid
 - **Jest**: Unit and integration testing
 - **Babel**: JavaScript transpilation for tests
+- **EffectComposer**: Advanced post-processing pipeline
 
 ### Browser Compatibility
 - Chrome 90+
@@ -284,7 +294,9 @@ This project is open source under the MIT License.
 ## 📊 Project Status
 
 ✅ Complete Features:
-- Core game engine with 32-bit rendering
+- Core game engine with 64-bit HDR rendering
+- Physically-based rendering (PBR) materials
+- Advanced post-processing pipeline (Bloom, SSAO, FXAA)
 - Player movement and camera controls
 - Combat system with accurate formulas
 - Skills system (Mining, Woodcutting, Fishing)

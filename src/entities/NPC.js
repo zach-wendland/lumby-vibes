@@ -131,7 +131,11 @@ export class NPC {
 
         // Body
         const bodyGeometry = new THREE.BoxGeometry(0.7, 1.1, 0.5);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: bodyColor });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: bodyColor,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = 1.15;
         body.castShadow = true;
@@ -139,7 +143,11 @@ export class NPC {
 
         // Head
         const headGeometry = new THREE.SphereGeometry(0.35, 12, 12);
-        const headMaterial = new THREE.MeshLambertMaterial({ color: 0xFFDBB5 });
+        const headMaterial = new THREE.MeshStandardMaterial({
+            color: 0xFFDBB5,
+            roughness: 0.9,
+            metalness: 0.0
+        });
         const head = new THREE.Mesh(headGeometry, headMaterial);
         head.position.y = 2.0;
         head.castShadow = true;
@@ -158,7 +166,11 @@ export class NPC {
 
         // Legs
         const legGeometry = new THREE.BoxGeometry(0.25, 0.8, 0.25);
-        const legMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+        const legMaterial = new THREE.MeshStandardMaterial({
+            color: 0x654321,
+            roughness: 0.7,
+            metalness: 0.0
+        });
 
         const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
         leftLeg.position.set(-0.2, 0.4, 0);

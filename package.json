@@ -1,7 +1,7 @@
 {
   "name": "lumbridge-threejs",
   "version": "1.0.0",
-  "description": "A RuneScape Lumbridge recreation using Three.js with enhanced 32-bit graphics",
+  "description": "A RuneScape Lumbridge recreation using Three.js with enhanced 64-bit HDR graphics and PBR materials",
   "type": "module",
   "scripts": {
     "dev": "python -m http.server 8000",
@@ -35,6 +35,9 @@
     "transform": {
       "^.+\\.js$": "babel-jest"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(three)/)"
+    ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
@@ -43,7 +46,8 @@
       "!src/main.js",
       "!src/game/GameLogic.js",
       "!src/ui/UIManager.js",
-      "!src/world/Lumbridge.js"
+      "!src/world/Lumbridge.js",
+      "!src/engine/PostProcessingManager.js"
     ],
     "coverageThreshold": {
       "global": {

@@ -37,9 +37,11 @@ export class Lumbridge {
      */
     createTerrain() {
         const geometry = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 100, 100);
-        const material = new THREE.MeshLambertMaterial({
+        const material = new THREE.MeshStandardMaterial({
             color: COLORS.GRASS,
-            side: THREE.DoubleSide
+            side: THREE.DoubleSide,
+            roughness: 0.9,
+            metalness: 0.0
         });
 
         // Add some variation to terrain height
@@ -63,11 +65,12 @@ export class Lumbridge {
      */
     createRiver() {
         const riverGeometry = new THREE.PlaneGeometry(15, 200);
-        const riverMaterial = new THREE.MeshPhongMaterial({
+        const riverMaterial = new THREE.MeshStandardMaterial({
             color: COLORS.WATER,
             transparent: true,
             opacity: 0.7,
-            shininess: 100
+            roughness: 0.1,  // Very smooth for water
+            metalness: 0.3   // Slightly reflective
         });
 
         const river = new THREE.Mesh(riverGeometry, riverMaterial);
@@ -89,7 +92,11 @@ export class Lumbridge {
 
         // Bridge deck
         const deckGeometry = new THREE.BoxGeometry(16, 0.5, 12);
-        const deckMaterial = new THREE.MeshLambertMaterial({ color: COLORS.WOOD });
+        const deckMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.WOOD,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const deck = new THREE.Mesh(deckGeometry, deckMaterial);
         deck.position.y = 0.5;
         deck.castShadow = true;
@@ -98,7 +105,11 @@ export class Lumbridge {
 
         // Railings
         const railingGeometry = new THREE.BoxGeometry(0.3, 1.5, 12);
-        const railingMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+        const railingMaterial = new THREE.MeshStandardMaterial({
+            color: 0x654321,
+            roughness: 0.7,
+            metalness: 0.0
+        });
 
         const leftRailing = new THREE.Mesh(railingGeometry, railingMaterial);
         leftRailing.position.set(-7.5, 1.25, 0);
@@ -151,7 +162,11 @@ export class Lumbridge {
 
         // Main castle body
         const bodyGeometry = new THREE.BoxGeometry(25, 20, 20);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: COLORS.CASTLE_STONE });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.CASTLE_STONE,
+            roughness: 0.85,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = 10;
         body.castShadow = true;
@@ -171,7 +186,11 @@ export class Lumbridge {
 
         // Castle door
         const doorGeometry = new THREE.BoxGeometry(4, 7, 0.5);
-        const doorMaterial = new THREE.MeshLambertMaterial({ color: 0x3E2723 });
+        const doorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3E2723,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const door = new THREE.Mesh(doorGeometry, doorMaterial);
         door.position.set(0, 3.5, 10.2);
         door.castShadow = true;
@@ -204,7 +223,11 @@ export class Lumbridge {
 
         // Tower body
         const bodyGeometry = new THREE.CylinderGeometry(3, 3, 25, 12);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x696969 });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x696969,
+            roughness: 0.85,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = 12.5;
         body.castShadow = true;
@@ -212,7 +235,11 @@ export class Lumbridge {
 
         // Cone roof
         const roofGeometry = new THREE.ConeGeometry(4, 5, 12);
-        const roofMaterial = new THREE.MeshLambertMaterial({ color: COLORS.ROOF_RED });
+        const roofMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.ROOF_RED,
+            roughness: 0.7,
+            metalness: 0.0
+        });
         const roof = new THREE.Mesh(roofGeometry, roofMaterial);
         roof.position.y = 27.5;
         roof.castShadow = true;
@@ -229,7 +256,11 @@ export class Lumbridge {
 
         // Main body
         const bodyGeometry = new THREE.BoxGeometry(12, 10, 8);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: COLORS.STONE });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.STONE,
+            roughness: 0.85,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = 5;
         body.castShadow = true;
@@ -237,7 +268,11 @@ export class Lumbridge {
 
         // Roof
         const roofGeometry = new THREE.ConeGeometry(9, 6, 4);
-        const roofMaterial = new THREE.MeshLambertMaterial({ color: COLORS.ROOF_GRAY });
+        const roofMaterial = new THREE.MeshStandardMaterial({
+            color: COLORS.ROOF_GRAY,
+            roughness: 0.7,
+            metalness: 0.0
+        });
         const roof = new THREE.Mesh(roofGeometry, roofMaterial);
         roof.position.y = 13;
         roof.rotation.y = Math.PI / 4;
@@ -247,14 +282,22 @@ export class Lumbridge {
         // Cross
         const crossBeamH = new THREE.Mesh(
             new THREE.BoxGeometry(1.5, 0.3, 0.3),
-            new THREE.MeshLambertMaterial({ color: 0xFFD700 })
+            new THREE.MeshStandardMaterial({
+                color: 0xFFD700,
+                roughness: 0.2,
+                metalness: 0.8  // Gold is metallic
+            })
         );
         crossBeamH.position.y = 17;
         churchGroup.add(crossBeamH);
 
         const crossBeamV = new THREE.Mesh(
             new THREE.BoxGeometry(0.3, 2, 0.3),
-            new THREE.MeshLambertMaterial({ color: 0xFFD700 })
+            new THREE.MeshStandardMaterial({
+                color: 0xFFD700,
+                roughness: 0.2,
+                metalness: 0.8  // Gold is metallic
+            })
         );
         crossBeamV.position.y = 16.5;
         churchGroup.add(crossBeamV);
@@ -275,7 +318,11 @@ export class Lumbridge {
 
         // Body
         const bodyGeometry = new THREE.BoxGeometry(8, 7, 6);
-        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0xD2B48C });
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0xD2B48C,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         body.position.y = 3.5;
         body.castShadow = true;
@@ -283,7 +330,11 @@ export class Lumbridge {
 
         // Roof
         const roofGeometry = new THREE.ConeGeometry(6, 4, 4);
-        const roofMaterial = new THREE.MeshLambertMaterial({ color: roofColor });
+        const roofMaterial = new THREE.MeshStandardMaterial({
+            color: roofColor,
+            roughness: 0.7,
+            metalness: 0.0
+        });
         const roof = new THREE.Mesh(roofGeometry, roofMaterial);
         roof.position.y = 9;
         roof.rotation.y = Math.PI / 4;
@@ -292,7 +343,11 @@ export class Lumbridge {
 
         // Door
         const doorGeometry = new THREE.BoxGeometry(2, 4, 0.3);
-        const doorMaterial = new THREE.MeshLambertMaterial({ color: 0x3E2723 });
+        const doorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3E2723,
+            roughness: 0.8,
+            metalness: 0.0
+        });
         const door = new THREE.Mesh(doorGeometry, doorMaterial);
         door.position.set(0, 2, 3.1);
         buildingGroup.add(door);
@@ -439,7 +494,11 @@ export class Lumbridge {
 
         // Trunk
         const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.7, 4, 8);
-        const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        const trunkMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8B4513,
+            roughness: 0.9,
+            metalness: 0.0
+        });
         const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
         trunk.position.y = 2;
         trunk.castShadow = true;
@@ -447,7 +506,11 @@ export class Lumbridge {
 
         // Foliage
         const foliageGeometry = new THREE.SphereGeometry(2.5, 12, 12);
-        const foliageMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+        const foliageMaterial = new THREE.MeshStandardMaterial({
+            color: 0x228B22,
+            roughness: 0.9,
+            metalness: 0.0
+        });
         const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
         foliage.position.y = 5;
         foliage.scale.set(1, 1.2, 1);
@@ -488,7 +551,11 @@ export class Lumbridge {
      */
     createRock(x, z) {
         const rockGeometry = new THREE.DodecahedronGeometry(1.2, 0);
-        const rockMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+        const rockMaterial = new THREE.MeshStandardMaterial({
+            color: 0x808080,
+            roughness: 0.95,
+            metalness: 0.0
+        });
         const rock = new THREE.Mesh(rockGeometry, rockMaterial);
         rock.position.set(x, 0.8, z);
         rock.castShadow = true;
@@ -572,7 +639,11 @@ export class Lumbridge {
     createPath(x1, z1, x2, z2) {
         const length = Math.sqrt((x2 - x1) ** 2 + (z2 - z1) ** 2);
         const geometry = new THREE.PlaneGeometry(3, length);
-        const material = new THREE.MeshLambertMaterial({ color: COLORS.DIRT });
+        const material = new THREE.MeshStandardMaterial({
+            color: COLORS.DIRT,
+            roughness: 0.9,
+            metalness: 0.0
+        });
 
         const path = new THREE.Mesh(geometry, material);
         path.rotation.x = -Math.PI / 2;
@@ -594,7 +665,11 @@ export class Lumbridge {
         for (let i = 0; i < postCount; i++) {
             const post = new THREE.Mesh(
                 new THREE.BoxGeometry(0.2, 1.5, 0.2),
-                new THREE.MeshLambertMaterial({ color: 0x654321 })
+                new THREE.MeshStandardMaterial({
+                    color: 0x654321,
+                    roughness: 0.8,
+                    metalness: 0.0
+                })
             );
 
             if (direction === 'horizontal') {
