@@ -139,24 +139,51 @@ global.THREE = {
             this.width = width;
             this.height = height;
         }
+    },
+    ConeGeometry: class ConeGeometry {
+        constructor(radius, height, radialSegments) {
+            this.radius = radius;
+            this.height = height;
+            this.radialSegments = radialSegments;
+        }
+    },
+    Color: class Color {
+        constructor(color) {
+            this.value = color || 0xffffff;
+        }
+        setHex(hex) {
+            this.value = hex;
+        }
+        getHex() {
+            return this.value;
+        }
     }
 };
 
-// Mock canvas and document for sprite creation
-global.document = {
-    createElement: (tag) => {
-        if (tag === 'canvas') {
+// Mock HTMLCanvasElement.prototype.getContext for canvas operations
+// jsdom creates canvas elements but getContext returns null by default
+if (typeof HTMLCanvasElement !== 'undefined') {
+    HTMLCanvasElement.prototype.getContext = function(contextType) {
+        if (contextType === '2d' || contextType === '2d-test') {
             return {
-                width: 256,
-                height: 64,
-                getContext: () => ({
-                    fillStyle: '',
-                    font: '',
-                    textAlign: '',
-                    fillText: jest.fn()
-                })
+                fillText: jest.fn(),
+                measureText: jest.fn(() => ({ width: 100 })),
+                clearRect: jest.fn(),
+                fillRect: jest.fn(),
+                strokeRect: jest.fn(),
+                drawImage: jest.fn(),
+                save: jest.fn(),
+                restore: jest.fn(),
+                translate: jest.fn(),
+                rotate: jest.fn(),
+                scale: jest.fn(),
+                fillStyle: '',
+                font: '',
+                textAlign: '',
+                strokeStyle: '',
+                lineWidth: 1
             };
         }
-        return {};
-    }
-};
+        return null;
+    };
+}

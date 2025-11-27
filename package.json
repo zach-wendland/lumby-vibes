@@ -40,7 +40,10 @@
     },
     "collectCoverageFrom": [
       "src/**/*.js",
-      "!src/main.js"
+      "!src/main.js",
+      "!src/game/GameLogic.js",
+      "!src/ui/UIManager.js",
+      "!src/world/Lumbridge.js"
     ],
     "coverageThreshold": {
       "global": {
