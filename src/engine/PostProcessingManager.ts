@@ -33,6 +33,7 @@ export class PostProcessingManager {
     private composer: EffectComposer | null;
     private passes: PostProcessingPasses;
     private enabled: boolean;
+    private hdrRenderTarget: THREE.WebGLRenderTarget | null;
 
     constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
         this.renderer = renderer;
@@ -41,6 +42,7 @@ export class PostProcessingManager {
         this.composer = null;
         this.passes = {};
         this.enabled = true;
+        this.hdrRenderTarget = null;
     }
 
     /**
@@ -61,6 +63,7 @@ export class PostProcessingManager {
             }
         );
 
+        this.hdrRenderTarget = renderTarget;
         this.composer = new EffectComposer(this.renderer, renderTarget);
         this.composer.setSize(window.innerWidth, window.innerHeight);
 
@@ -203,9 +206,38 @@ export class PostProcessingManager {
      * Dispose of all resources
      */
     dispose(): void {
-        if (this.composer) {
-            this.composer.renderTarget1.dispose();
-            this.composer.renderTarget2.dispose();
+        if (this.passes.ssao && typeof this.passes.ssao.dispose === 'function') {
+            this.passes.ssao.dispose();
         }
+
+        if (this.passes.bloom && typeof this.passes.bloom.dispose === 'function') {
+            this.passes.bloom.dispose();
+        }
+
+        if (this.passes.fxaa && typeof this.passes.fxaa.dispose === 'function') {
+            this.passes.fxaa.dispose();
+        }
+
+        if (this.passes.output && typeof this.passes.output.dispose === 'function') {
+            this.passes.output.dispose();
+        }
+
+        if (this.composer) {
+            const composerWithDispose = this.composer as EffectComposer & { dispose?: () => void };
+            if (typeof composerWithDispose.dispose === 'function') {
+                composerWithDispose.dispose();
+            } else {
+                this.composer.renderTarget1.dispose();
+                this.composer.renderTarget2.dispose();
+            }
+            this.composer = null;
+        }
+
+        if (this.hdrRenderTarget) {
+            this.hdrRenderTarget.dispose();
+            this.hdrRenderTarget = null;
+        }
+
+        this.passes = {};
     }
 }
