@@ -7,13 +7,13 @@
 import { PostProcessingManager } from '../src/engine/PostProcessingManager.ts';
 
 // Mock Three.js
-const mockRenderer = {
+const createMockRenderer = () => ({
     getPixelRatio: jest.fn(() => 1),
     render: jest.fn(),
     capabilities: {
         isWebGL2: true
     }
-};
+});
 
 const mockScene = {
     children: []
@@ -23,19 +23,21 @@ const mockCamera = {
     position: { x: 0, y: 0, z: 0 }
 };
 
-const mockComposer = {
+const createMockComposer = () => ({
     render: jest.fn(),
     setSize: jest.fn(),
     addPass: jest.fn(),
     renderTarget1: { dispose: jest.fn() },
-    renderTarget2: { dispose: jest.fn() }
-};
+    renderTarget2: { dispose: jest.fn() },
+    dispose: jest.fn()
+});
+
+let mockComposer;
+let mockRenderer;
+let mockRenderTarget;
 
 jest.mock('three', () => ({
-    WebGLRenderTarget: jest.fn(() => ({
-        setSize: jest.fn(),
-        dispose: jest.fn()
-    })),
+    WebGLRenderTarget: jest.fn(() => mockRenderTarget),
     Vector2: jest.fn(),
     HalfFloatType: 'HalfFloatType',
     RGBAFormat: 'RGBAFormat',
@@ -48,11 +50,16 @@ jest.mock('three/examples/jsm/postprocessing/EffectComposer.js', () => ({
 }));
 
 jest.mock('three/examples/jsm/postprocessing/RenderPass.js', () => ({
-    RenderPass: jest.fn()
+    RenderPass: jest.fn(() => ({ dispose: jest.fn() }))
 }));
 
 jest.mock('three/examples/jsm/postprocessing/UnrealBloomPass.js', () => ({
-    UnrealBloomPass: jest.fn()
+    UnrealBloomPass: jest.fn(() => ({
+        strength: 0,
+        radius: 0,
+        threshold: 0,
+        dispose: jest.fn()
+    }))
 }));
 
 jest.mock('three/examples/jsm/postprocessing/SSAOPass.js', () => ({
@@ -61,7 +68,8 @@ jest.mock('three/examples/jsm/postprocessing/SSAOPass.js', () => ({
         minDistance: 0,
         maxDistance: 0,
         output: 0,
-        setSize: jest.fn()
+        setSize: jest.fn(),
+        dispose: jest.fn()
     }))
 }));
 
@@ -73,7 +81,8 @@ jest.mock('three/examples/jsm/postprocessing/ShaderPass.js', () => ({
                     value: { x: 0, y: 0 }
                 }
             }
-        }
+        },
+        dispose: jest.fn()
     }))
 }));
 
@@ -82,16 +91,19 @@ jest.mock('three/examples/jsm/shaders/FXAAShader.js', () => ({
 }));
 
 jest.mock('three/examples/jsm/postprocessing/OutputPass.js', () => ({
-    OutputPass: jest.fn()
+    OutputPass: jest.fn(() => ({ dispose: jest.fn() }))
 }));
 
 describe('PostProcessingManager', () => {
     let ppManager;
 
     beforeEach(() => {
-        ppManager = new PostProcessingManager(mockRenderer, mockScene, mockCamera);
-        global.window = { innerWidth: 1920, innerHeight: 1080 };
         jest.clearAllMocks();
+        mockRenderer = createMockRenderer();
+        mockComposer = createMockComposer();
+        mockRenderTarget = { setSize: jest.fn(), dispose: jest.fn() };
+        ppManager = new PostProcessingManager(mockRenderer, mockScene, mockCamera);
+        global.window = { innerWidth: 1920, innerHeight: 1080, devicePixelRatio: 1 };
     });
 
     describe('TEST-007: Initialization', () => {
@@ -220,10 +232,23 @@ describe('PostProcessingManager', () => {
     describe('Resource Management', () => {
         test('should dispose of resources', () => {
             ppManager.init();
+            const bloomPass = ppManager.passes.bloom;
+            const ssaoPass = ppManager.passes.ssao;
+            const fxaaPass = ppManager.passes.fxaa;
+            const outputPass = ppManager.passes.output;
+
             ppManager.dispose();
 
             expect(mockComposer.renderTarget1.dispose).toHaveBeenCalled();
             expect(mockComposer.renderTarget2.dispose).toHaveBeenCalled();
+            expect(mockComposer.dispose).toHaveBeenCalled();
+            expect(mockRenderTarget.dispose).toHaveBeenCalled();
+            expect(bloomPass.dispose).toHaveBeenCalled();
+            expect(ssaoPass.dispose).toHaveBeenCalled();
+            expect(fxaaPass.dispose).toHaveBeenCalled();
+            expect(outputPass.dispose).toHaveBeenCalled();
+            expect(ppManager.composer).toBeNull();
+            expect(ppManager.passes).toEqual({});
         });
     });
 });

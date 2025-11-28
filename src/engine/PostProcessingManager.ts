@@ -32,6 +32,7 @@ export class PostProcessingManager {
     private camera: THREE.Camera;
     private composer: EffectComposer | null;
     private passes: PostProcessingPasses;
+    private renderTarget: THREE.WebGLRenderTarget | null;
     private enabled: boolean;
 
     constructor(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
@@ -40,6 +41,7 @@ export class PostProcessingManager {
         this.camera = camera;
         this.composer = null;
         this.passes = {};
+        this.renderTarget = null;
         this.enabled = true;
     }
 
@@ -48,7 +50,7 @@ export class PostProcessingManager {
      */
     init(): void {
         // Create composer with HDR render target
-        const renderTarget = new THREE.WebGLRenderTarget(
+        this.renderTarget = new THREE.WebGLRenderTarget(
             window.innerWidth,
             window.innerHeight,
             {
@@ -61,7 +63,7 @@ export class PostProcessingManager {
             }
         );
 
-        this.composer = new EffectComposer(this.renderer, renderTarget);
+        this.composer = new EffectComposer(this.renderer, this.renderTarget);
         this.composer.setSize(window.innerWidth, window.innerHeight);
 
         // Add render pass (base scene rendering)
@@ -204,8 +206,30 @@ export class PostProcessingManager {
      */
     dispose(): void {
         if (this.composer) {
-            this.composer.renderTarget1.dispose();
-            this.composer.renderTarget2.dispose();
+            if (this.composer.renderTarget1) {
+                this.composer.renderTarget1.dispose();
+            }
+            if (this.composer.renderTarget2) {
+                this.composer.renderTarget2.dispose();
+            }
+
+            if (typeof (this.composer as { dispose?: () => void }).dispose === 'function') {
+                (this.composer as { dispose: () => void }).dispose();
+            }
         }
+
+        if (this.renderTarget) {
+            this.renderTarget.dispose();
+            this.renderTarget = null;
+        }
+
+        Object.values(this.passes).forEach((pass) => {
+            if (pass && typeof (pass as { dispose?: () => void }).dispose === 'function') {
+                (pass as { dispose: () => void }).dispose();
+            }
+        });
+
+        this.passes = {};
+        this.composer = null;
     }
 }

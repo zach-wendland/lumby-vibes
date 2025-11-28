@@ -6,30 +6,25 @@
 
 import { GameEngine } from '../src/engine/GameEngine.ts';
 
-// Mock DOM elements
-const mockCanvas = {
-    getContext: jest.fn(),
-    addEventListener: jest.fn(),
-    width: 800,
-    height: 600
-};
+jest.mock('../src/engine/PostProcessingManager.ts', () => ({
+    PostProcessingManager: jest.fn().mockImplementation(() => ({
+        init: jest.fn(),
+        render: jest.fn(),
+        onResize: jest.fn(),
+        dispose: jest.fn()
+    }))
+}));
 
-const mockDocument = {
-    getElementById: jest.fn((id) => {
-        if (id === 'game-canvas') return mockCanvas;
-        if (id === 'loading-progress') return { style: { width: '' } };
-        if (id === 'loading-text') return { textContent: '' };
-        if (id === 'loading-screen') return { classList: { add: jest.fn() } };
-        return null;
-    })
-};
-
-global.document = mockDocument;
-global.window = {
-    innerWidth: 800,
-    innerHeight: 600,
-    devicePixelRatio: 1,
-    addEventListener: jest.fn()
+const setupDOM = () => {
+    document.body.innerHTML = [
+        '<canvas id="game-canvas"></canvas>',
+        '<div id="loading-progress"></div>',
+        '<div id="loading-text"></div>',
+        '<div id="loading-screen"></div>'
+    ].join('');
+    Object.defineProperty(window, 'innerWidth', { value: 800, writable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 600, writable: true });
+    Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true });
 };
 
 // Mock Three.js
@@ -118,8 +113,9 @@ describe('GameEngine 64-bit Graphics', () => {
     let engine;
 
     beforeEach(() => {
-        engine = new GameEngine();
+        setupDOM();
         jest.clearAllMocks();
+        engine = new GameEngine();
     });
 
     describe('TEST-001: 64-bit Renderer Initialization', () => {
