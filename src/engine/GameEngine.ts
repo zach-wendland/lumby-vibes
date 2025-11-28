@@ -52,6 +52,11 @@ export class GameEngine {
     private updateCallbacks: UpdateCallback[];
     private renderCallbacks: RenderCallback[];
 
+    private handleResize: () => void;
+    private handleMouseMove: (event: MouseEvent) => void;
+    private handleClick: (event: MouseEvent) => void;
+    private handleContextMenu: (event: MouseEvent) => void;
+
     public isRunning: boolean;
     private loadingProgress: number;
 
@@ -66,6 +71,9 @@ export class GameEngine {
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null;
+        this.scene = null as unknown as THREE.Scene;
+        this.camera = null as unknown as THREE.PerspectiveCamera;
+        this.renderer = null as unknown as THREE.WebGLRenderer;
 
         this.entities = [];
         this.updateCallbacks = [];
@@ -78,12 +86,21 @@ export class GameEngine {
         this.supportsHDR = false;
         this.renderTarget = null;
         this.postProcessing = null;
+
+        this.handleResize = () => this.onWindowResize();
+        this.handleMouseMove = (event: MouseEvent) => this.onMouseMove(event);
+        this.handleClick = (event: MouseEvent) => this.onClick(event);
+        this.handleContextMenu = (event: MouseEvent) => this.onRightClick(event);
     }
 
     /**
      * Initialize the Three.js scene with enhanced 64-bit HDR rendering
      */
     async init(): Promise<void> {
+        if (!this.canvas) {
+            throw new Error('Game canvas element with id "game-canvas" not found');
+        }
+
         // Create scene
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x87CEEB); // Sky blue
@@ -101,7 +118,7 @@ export class GameEngine {
 
         // Create renderer with 64-bit HDR color support
         this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas!,
+            canvas: this.canvas,
             antialias: true,
             alpha: false,
             precision: 'highp', // High precision for 64-bit rendering
@@ -140,12 +157,12 @@ export class GameEngine {
         this.postProcessing.init();
 
         // Handle window resize
-        window.addEventListener('resize', () => this.onWindowResize(), false);
+        window.addEventListener('resize', this.handleResize, false);
 
         // Mouse events for raycasting
-        this.canvas!.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
-        this.canvas!.addEventListener('click', (e) => this.onClick(e), false);
-        this.canvas!.addEventListener('contextmenu', (e) => this.onRightClick(e), false);
+        this.canvas.addEventListener('mousemove', this.handleMouseMove, false);
+        this.canvas.addEventListener('click', this.handleClick, false);
+        this.canvas.addEventListener('contextmenu', this.handleContextMenu, false);
 
         this.updateLoadingProgress(30);
     }
@@ -425,6 +442,49 @@ export class GameEngine {
      * Stop the game loop
      */
     stop(): void {
+        this.isRunning = false;
+    }
+
+    /**
+     * Dispose of resources and event listeners
+     */
+    dispose(): void {
+        this.stop();
+
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('resize', this.handleResize, false);
+        }
+
+        if (this.canvas) {
+            this.canvas.removeEventListener('mousemove', this.handleMouseMove, false);
+            this.canvas.removeEventListener('click', this.handleClick, false);
+            this.canvas.removeEventListener('contextmenu', this.handleContextMenu, false);
+        }
+
+        if (this.postProcessing) {
+            this.postProcessing.dispose();
+            this.postProcessing = null;
+        }
+
+        if (this.renderTarget) {
+            this.renderTarget.dispose();
+            this.renderTarget = null;
+        }
+
+        if (this.renderer) {
+            if (typeof (this.renderer as { forceContextLoss?: () => void }).forceContextLoss === 'function') {
+                (this.renderer as { forceContextLoss: () => void }).forceContextLoss();
+            }
+            this.renderer.dispose();
+        }
+
+        if (this.scene && typeof (this.scene as { clear?: () => void }).clear === 'function') {
+            this.scene.clear();
+        }
+
+        this.entities = [];
+        this.updateCallbacks = [];
+        this.renderCallbacks = [];
         this.isRunning = false;
     }
 
