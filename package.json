@@ -53,17 +53,12 @@
     },
     "moduleFileExtensions": ["ts", "js", "json"],
     "collectCoverageFrom": [
-      "src/**/*.{js,ts}",
+      "src/**/*.ts",
       "!src/main.ts",
-      "!src/main.js",
       "!src/game/GameLogic.ts",
-      "!src/game/GameLogic.js",
       "!src/ui/UIManager.ts",
-      "!src/ui/UIManager.js",
       "!src/world/Lumbridge.ts",
-      "!src/world/Lumbridge.js",
-      "!src/engine/PostProcessingManager.ts",
-      "!src/engine/PostProcessingManager.js"
+      "!src/engine/PostProcessingManager.ts"
     ],
     "coverageThreshold": {
       "global": {

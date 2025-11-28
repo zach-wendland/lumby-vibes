@@ -148,32 +148,46 @@ The test suite covers:
 lumby-vibes/
 ├── index.html              # Main HTML file
 ├── styles.css              # UI styling
+├── tsconfig.json           # TypeScript configuration
+├── vite.config.ts          # Vite build config
 ├── src/
-│   ├── main.js            # Entry point
+│   ├── main.ts                     # Entry point
+│   ├── types/                      # TypeScript type definitions
+│   │   ├── index.ts               # Core OSRS types
+│   │   ├── entities.ts            # Entity types
+│   │   ├── systems.ts             # System types
+│   │   └── loot.ts                # Loot types
 │   ├── engine/
-│   │   └── GameEngine.js  # Three.js rendering engine
+│   │   ├── GameEngine.ts          # Three.js rendering engine
+│   │   └── PostProcessingManager.ts  # Post-processing
 │   ├── game/
-│   │   └── GameLogic.js   # Main game controller
+│   │   └── GameLogic.ts           # Main game controller
 │   ├── entities/
-│   │   ├── Player.js      # Player character
-│   │   ├── NPC.js         # Non-player characters
-│   │   └── Enemy.js       # Hostile creatures
+│   │   ├── Player.ts              # Player character
+│   │   ├── NPC.ts                 # Non-player characters
+│   │   └── Enemy.ts               # Hostile creatures
 │   ├── world/
-│   │   └── Lumbridge.js   # World environment
+│   │   └── Lumbridge.ts           # World environment
 │   ├── systems/
-│   │   ├── CombatSystem.js    # Combat mechanics
-│   │   └── SkillsSystem.js    # Skills (Mining, etc.)
+│   │   ├── CombatSystem.ts        # Combat mechanics
+│   │   ├── SkillsSystem.ts        # Skills (Mining, etc.)
+│   │   ├── QuestSystem.ts         # Quest progression
+│   │   ├── LootSystem.ts          # Loot generation
+│   │   └── ShopSystem.ts          # Shop mechanics
+│   ├── data/
+│   │   ├── NPCData.ts             # NPC definitions
+│   │   └── EnemyData.ts           # Enemy definitions
 │   ├── ui/
-│   │   └── UIManager.js   # UI updates and interactions
+│   │   └── UIManager.ts           # UI updates
 │   └── utils/
-│       ├── Constants.js   # Game constants
-│       └── XPCalculator.js # XP and level calculations
-├── tests/                 # Test files
+│       ├── Constants.ts           # Game constants
+│       └── XPCalculator.ts        # XP calculations
+├── tests/                          # Test files
 │   ├── XPCalculator.test.js
 │   ├── Player.test.js
 │   └── CombatSystem.test.js
-├── package.json           # Dependencies and scripts
-└── README.md             # This file
+├── package.json                    # Dependencies and scripts
+└── README.md                       # This file
 ```
 
 ## 🎨 Graphics Features
@@ -210,13 +224,13 @@ lumby-vibes/
 
 1. **Adding New NPCs**
 ```javascript
-// In src/world/Lumbridge.js
+// In src/world/Lumbridge.ts
 this.npcs.push(new NPC(x, z, NPC_TYPES.VILLAGER, 'New NPC'));
 ```
 
 2. **Creating New Enemies**
 ```javascript
-// Add to ENEMY_TYPES in src/utils/Constants.js
+// Add to ENEMY_TYPES in src/utils/Constants.ts
 ENEMY_TYPES: {
     NEW_ENEMY: { name: 'Enemy Name', level: 5, hp: 20, xp: 15 }
 }
@@ -227,7 +241,7 @@ this.enemies.push(new Enemy(x, z, 'NEW_ENEMY'));
 
 3. **Adding New Items**
 ```javascript
-// In src/utils/Constants.js
+// In src/utils/Constants.ts
 ITEMS: {
     NEW_ITEM: { id: 100, name: 'New Item', stackable: true }
 }
@@ -245,11 +259,12 @@ window.game.combatSystem.stopCombat();  // Stop combat
 ## 📝 Technical Details
 
 ### Technologies Used
+- **TypeScript 5.9**: Full type safety with strict mode
 - **Three.js r181**: 3D graphics rendering with HDR support
-- **Vanilla JavaScript**: ES6+ modules
+- **Vite 7.2**: Fast build tool with TypeScript support and HMR
 - **CSS3**: UI styling with flexbox and grid
-- **Jest**: Unit and integration testing
-- **Babel**: JavaScript transpilation for tests
+- **Jest 29**: Unit and integration testing
+- **Babel**: TypeScript transpilation for tests
 - **EffectComposer**: Advanced post-processing pipeline
 
 ### Browser Compatibility
@@ -294,21 +309,39 @@ This project is open source under the MIT License.
 ## 📊 Project Status
 
 ✅ Complete Features:
+- **TypeScript Migration**: Fully migrated to TypeScript with strict mode
 - Core game engine with 64-bit HDR rendering
 - Physically-based rendering (PBR) materials
 - Advanced post-processing pipeline (Bloom, SSAO, FXAA)
 - Player movement and camera controls
 - Combat system with accurate formulas
 - Skills system (Mining, Woodcutting, Fishing)
+- Quest system (6 quests implemented)
+- Loot system with Rare Drop Table
+- Shop system with auto-restocking
 - Inventory and equipment management
-- NPC interactions and dialogue
-- Enemy AI and respawning
+- NPC interactions and dialogue (25+ NPCs)
+- Enemy AI and respawning (15 enemy types)
 - UI with all tabs functional
 - Minimap with real-time updates
 - Comprehensive test coverage
 
+## 🔷 TypeScript Migration
+
+This project has been fully migrated to TypeScript with:
+- ✅ All 22 source files converted to `.ts`
+- ✅ Comprehensive type system (338-line type definitions)
+- ✅ Strict mode enabled for maximum type safety
+- ✅ Vite build system with TypeScript support
+- ✅ Zero runtime overhead (compiles to ES2020)
+
+### Type Safety Features
+- Compile-time type checking prevents runtime errors
+- IntelliSense and autocomplete in all modern IDEs
+- Refactoring safety with static analysis
+- Clear interfaces for all game systems (Skills, Combat, Quests, Loot, etc.)
+
 🚧 Future Enhancements:
-- Quest system implementation
 - Multiplayer support
 - More training areas (Wilderness, etc.)
 - Additional skills (Crafting, Smithing)
