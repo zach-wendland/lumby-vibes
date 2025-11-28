@@ -417,6 +417,14 @@ export class GameEngine {
      * Start the game loop
      */
     start(): void {
+        if (this.isRunning) {
+            return;
+        }
+
+        // Reset clock delta to avoid large jumps after pauses
+        this.delta = 0;
+        this.clock.getDelta();
+
         this.isRunning = true;
         this.gameLoop();
     }
