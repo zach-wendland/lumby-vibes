@@ -4,6 +4,15 @@
 
 import { GameEngine } from '../src/engine/GameEngine.ts';
 
+jest.mock('../src/engine/PostProcessingManager.ts', () => ({
+    PostProcessingManager: jest.fn().mockImplementation(() => ({
+        init: jest.fn(),
+        render: jest.fn(),
+        onResize: jest.fn(),
+        dispose: jest.fn()
+    }))
+}));
+
 // Mock getElementById while preserving createElement from setup
 const originalCreateElement = global.document.createElement;
 global.document.getElementById = jest.fn((id) => {

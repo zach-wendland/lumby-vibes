@@ -45,6 +45,7 @@ global.OffscreenCanvas = class OffscreenCanvas {
     }
 };
 
+
 // Suppress console errors during tests (optional)
 // global.console.error = jest.fn();
 // global.console.warn = jest.fn();
