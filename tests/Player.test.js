@@ -18,8 +18,8 @@ global.HTMLCanvasElement.prototype.getContext = function(contextType) {
     return null;
 };
 
-import { Player } from '../src/entities/Player.js';
-import { ITEMS, SKILLS } from '../src/utils/Constants.js';
+import { Player } from '../src/entities/Player.ts';
+import { ITEMS, SKILLS } from '../src/utils/Constants.ts';
 
 // Mock THREE.js
 global.THREE = {

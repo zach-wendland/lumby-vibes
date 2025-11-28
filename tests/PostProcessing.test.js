@@ -4,7 +4,7 @@
  * Tests for 64-bit HDR post-processing pipeline
  */
 
-import { PostProcessingManager } from '../src/engine/PostProcessingManager.js';
+import { PostProcessingManager } from '../src/engine/PostProcessingManager.ts';
 
 // Mock Three.js
 const mockRenderer = {

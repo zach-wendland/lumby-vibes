@@ -2,7 +2,7 @@
  * Comprehensive GameEngine tests
  */
 
-import { GameEngine } from '../src/engine/GameEngine.js';
+import { GameEngine } from '../src/engine/GameEngine.ts';
 
 // Mock getElementById while preserving createElement from setup
 const originalCreateElement = global.document.createElement;

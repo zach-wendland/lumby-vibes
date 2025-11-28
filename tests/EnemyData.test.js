@@ -2,7 +2,7 @@
  * Comprehensive EnemyData tests
  */
 
-import { ENEMY_DATA, SPAWN_LOCATIONS, getEnemyData, getEnemiesByLocation } from '../src/data/EnemyData.js';
+import { ENEMY_DATA, SPAWN_LOCATIONS, getEnemyData, getEnemiesByLocation } from '../src/data/EnemyData.ts';
 
 describe('EnemyData', () => {
     describe('Data integrity', () => {

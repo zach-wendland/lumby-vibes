@@ -2,7 +2,7 @@
  * XPCalculator Tests
  */
 
-import { XPCalculator } from '../src/utils/XPCalculator.js';
+import { XPCalculator } from '../src/utils/XPCalculator.ts';
 
 describe('XPCalculator', () => {
     describe('getLevelFromXP', () => {

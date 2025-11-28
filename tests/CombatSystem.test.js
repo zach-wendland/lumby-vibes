@@ -18,9 +18,9 @@ global.HTMLCanvasElement.prototype.getContext = function(contextType) {
     return null;
 };
 
-import { CombatSystem } from '../src/systems/CombatSystem.js';
-import { Player } from '../src/entities/Player.js';
-import { Enemy } from '../src/entities/Enemy.js';
+import { CombatSystem } from '../src/systems/CombatSystem.ts';
+import { Player } from '../src/entities/Player.ts';
+import { Enemy } from '../src/entities/Enemy.ts';
 
 // Mock THREE.js (same as Player.test.js)
 global.THREE = {

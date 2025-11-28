@@ -2,7 +2,7 @@
  * Comprehensive LootSystem tests
  */
 
-import { LootSystem, DROP_TABLES, RARITY } from '../src/systems/LootSystem.js';
+import { LootSystem, DROP_TABLES, RARITY } from '../src/systems/LootSystem.ts';
 
 describe('LootSystem', () => {
     let lootSystem;

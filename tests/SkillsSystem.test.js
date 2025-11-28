@@ -2,8 +2,8 @@
  * Comprehensive SkillsSystem tests
  */
 
-import { SkillsSystem } from '../src/systems/SkillsSystem.js';
-import { SKILLS, ITEMS } from '../src/utils/Constants.js';
+import { SkillsSystem } from '../src/systems/SkillsSystem.ts';
+import { SKILLS, ITEMS } from '../src/utils/Constants.ts';
 
 describe('SkillsSystem', () => {
     let mockGameLogic;

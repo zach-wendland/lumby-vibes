@@ -2,7 +2,7 @@
  * Comprehensive ShopSystem tests
  */
 
-import { ShopSystem, SHOPS } from '../src/systems/ShopSystem.js';
+import { ShopSystem, SHOPS } from '../src/systems/ShopSystem.ts';
 
 describe('ShopSystem', () => {
     let mockGameLogic;

@@ -2,7 +2,7 @@
  * QuestSystem tests
  */
 
-import { QuestSystem, QUESTS, QUEST_STATUS } from '../src/systems/QuestSystem.js';
+import { QuestSystem, QUESTS, QUEST_STATUS } from '../src/systems/QuestSystem.ts';
 
 describe('QuestSystem', () => {
     let mockPlayer;

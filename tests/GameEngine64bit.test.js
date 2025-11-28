@@ -4,7 +4,7 @@
  * Tests for 64-bit HDR rendering capabilities
  */
 
-import { GameEngine } from '../src/engine/GameEngine.js';
+import { GameEngine } from '../src/engine/GameEngine.ts';
 
 // Mock DOM elements
 const mockCanvas = {

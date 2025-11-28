@@ -5,13 +5,13 @@
  * integrate properly and work together as they would in actual gameplay.
  */
 
-import { Player } from '../src/entities/Player.js';
-import { CombatSystem } from '../src/systems/CombatSystem.js';
-import { QuestSystem } from '../src/systems/QuestSystem.js';
-import { LootSystem } from '../src/systems/LootSystem.js';
-import { SkillsSystem } from '../src/systems/SkillsSystem.js';
-import { XPCalculator } from '../src/utils/XPCalculator.js';
-import { SKILLS, ITEMS } from '../src/utils/Constants.js';
+import { Player } from '../src/entities/Player.ts';
+import { CombatSystem } from '../src/systems/CombatSystem.ts';
+import { QuestSystem } from '../src/systems/QuestSystem.ts';
+import { LootSystem } from '../src/systems/LootSystem.ts';
+import { SkillsSystem } from '../src/systems/SkillsSystem.ts';
+import { XPCalculator } from '../src/utils/XPCalculator.ts';
+import { SKILLS, ITEMS } from '../src/utils/Constants.ts';
 
 // Mock Player.createMesh to avoid canvas issues in tests
 jest.spyOn(Player.prototype, 'createMesh').mockImplementation(function() {

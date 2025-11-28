@@ -2,8 +2,8 @@
  * Comprehensive Enemy tests
  */
 
-import { Enemy } from '../src/entities/Enemy.js';
-import { ITEMS } from '../src/utils/Constants.js';
+import { Enemy } from '../src/entities/Enemy.ts';
+import { ITEMS } from '../src/utils/Constants.ts';
 
 describe('Enemy', () => {
     describe('Initialization', () => {

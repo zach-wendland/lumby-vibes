@@ -2,8 +2,8 @@
  * Comprehensive NPC tests
  */
 
-import { NPC } from '../src/entities/NPC.js';
-import { NPC_TYPES } from '../src/utils/Constants.js';
+import { NPC } from '../src/entities/NPC.ts';
+import { NPC_TYPES } from '../src/utils/Constants.ts';
 
 describe('NPC', () => {
     describe('Initialization', () => {

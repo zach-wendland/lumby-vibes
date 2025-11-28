@@ -4,7 +4,7 @@
  * Tests the game initialization, loading screen behavior, and error handling.
  */
 
-import { GameLogic } from '../src/game/GameLogic.js';
+import { GameLogic } from '../src/game/GameLogic.ts';
 
 // Mock GameLogic for controlled testing
 jest.mock('../src/game/GameLogic.js');

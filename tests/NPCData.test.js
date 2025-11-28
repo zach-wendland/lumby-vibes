@@ -2,7 +2,7 @@
  * Comprehensive NPCData tests
  */
 
-import { NPC_DATA } from '../src/data/NPCData.js';
+import { NPC_DATA } from '../src/data/NPCData.ts';
 
 describe('NPCData', () => {
     describe('Data integrity', () => {
