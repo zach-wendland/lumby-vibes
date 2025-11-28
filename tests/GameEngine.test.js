@@ -375,6 +375,31 @@ describe('GameEngine', () => {
             expect(rafSpy).not.toHaveBeenCalled();
             rafSpy.mockRestore();
         });
+
+        test('should handle repeated start calls across visibility changes', () => {
+            const loopSpy = jest.spyOn(engine, 'gameLoop').mockImplementation(() => {});
+            engine.clock = mockClock;
+
+            // First start initializes the loop
+            engine.start();
+            expect(engine.isRunning).toBe(true);
+            expect(loopSpy).toHaveBeenCalledTimes(1);
+
+            // Subsequent start while already running should be ignored
+            engine.start();
+            expect(loopSpy).toHaveBeenCalledTimes(1);
+
+            // Simulate visibility loss and resume
+            engine.stop();
+            expect(engine.isRunning).toBe(false);
+
+            engine.start();
+            expect(engine.isRunning).toBe(true);
+            expect(mockClock.getDelta).toHaveBeenCalled();
+            expect(loopSpy).toHaveBeenCalledTimes(2);
+
+            loopSpy.mockRestore();
+        });
     });
 
     describe('Loading progress', () => {
