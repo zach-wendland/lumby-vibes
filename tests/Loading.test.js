@@ -6,8 +6,18 @@
 
 import { GameLogic } from '../src/game/GameLogic.ts';
 
+// Mock PostProcessingManager to avoid Three.js module issues
+jest.mock('../src/engine/PostProcessingManager.ts', () => ({
+    PostProcessingManager: jest.fn().mockImplementation(() => ({
+        init: jest.fn(),
+        render: jest.fn(),
+        onResize: jest.fn(),
+        dispose: jest.fn()
+    }))
+}));
+
 // Mock GameLogic for controlled testing
-jest.mock('../src/game/GameLogic.js');
+jest.mock('../src/game/GameLogic.ts');
 
 describe('Loading and Error Handling', () => {
     let mockDocument;
