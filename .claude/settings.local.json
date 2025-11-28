@@ -20,7 +20,9 @@
       "Bash(NUL)",
       "Bash(del NUL 2)",
       "Bash(findstr:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
