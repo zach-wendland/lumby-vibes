@@ -7,6 +7,11 @@
 import { PostProcessingManager } from '../src/engine/PostProcessingManager.ts';
 
 // Mock Three.js
+const mockHDRRenderTarget = {
+    setSize: jest.fn(),
+    dispose: jest.fn()
+};
+
 const mockRenderer = {
     getPixelRatio: jest.fn(() => 1),
     render: jest.fn(),
@@ -28,14 +33,12 @@ const mockComposer = {
     setSize: jest.fn(),
     addPass: jest.fn(),
     renderTarget1: { dispose: jest.fn() },
-    renderTarget2: { dispose: jest.fn() }
+    renderTarget2: { dispose: jest.fn() },
+    dispose: jest.fn()
 };
 
 jest.mock('three', () => ({
-    WebGLRenderTarget: jest.fn(() => ({
-        setSize: jest.fn(),
-        dispose: jest.fn()
-    })),
+    WebGLRenderTarget: jest.fn(() => mockHDRRenderTarget),
     Vector2: jest.fn(),
     HalfFloatType: 'HalfFloatType',
     RGBAFormat: 'RGBAFormat',
@@ -52,7 +55,7 @@ jest.mock('three/examples/jsm/postprocessing/RenderPass.js', () => ({
 }));
 
 jest.mock('three/examples/jsm/postprocessing/UnrealBloomPass.js', () => ({
-    UnrealBloomPass: jest.fn()
+    UnrealBloomPass: jest.fn(() => ({ dispose: jest.fn() }))
 }));
 
 jest.mock('three/examples/jsm/postprocessing/SSAOPass.js', () => ({
@@ -61,7 +64,8 @@ jest.mock('three/examples/jsm/postprocessing/SSAOPass.js', () => ({
         minDistance: 0,
         maxDistance: 0,
         output: 0,
-        setSize: jest.fn()
+        setSize: jest.fn(),
+        dispose: jest.fn()
     }))
 }));
 
@@ -73,7 +77,8 @@ jest.mock('three/examples/jsm/postprocessing/ShaderPass.js', () => ({
                     value: { x: 0, y: 0 }
                 }
             }
-        }
+        },
+        dispose: jest.fn()
     }))
 }));
 
@@ -82,7 +87,7 @@ jest.mock('three/examples/jsm/shaders/FXAAShader.js', () => ({
 }));
 
 jest.mock('three/examples/jsm/postprocessing/OutputPass.js', () => ({
-    OutputPass: jest.fn()
+    OutputPass: jest.fn(() => ({ dispose: jest.fn() }))
 }));
 
 describe('PostProcessingManager', () => {
@@ -92,6 +97,10 @@ describe('PostProcessingManager', () => {
         ppManager = new PostProcessingManager(mockRenderer, mockScene, mockCamera);
         global.window = { innerWidth: 1920, innerHeight: 1080 };
         jest.clearAllMocks();
+        mockComposer.dispose = jest.fn();
+        mockComposer.renderTarget1.dispose = jest.fn();
+        mockComposer.renderTarget2.dispose = jest.fn();
+        mockHDRRenderTarget.dispose = jest.fn();
     });
 
     describe('TEST-007: Initialization', () => {
@@ -219,11 +228,33 @@ describe('PostProcessingManager', () => {
 
     describe('Resource Management', () => {
         test('should dispose of resources', () => {
+            mockComposer.dispose = undefined;
             ppManager.init();
             ppManager.dispose();
 
             expect(mockComposer.renderTarget1.dispose).toHaveBeenCalled();
             expect(mockComposer.renderTarget2.dispose).toHaveBeenCalled();
+        });
+
+        test('should clean up passes, render targets, and composer', () => {
+            ppManager.init();
+
+            const ssaoPass = ppManager.passes.ssao;
+            const bloomPass = ppManager.passes.bloom;
+            const fxaaPass = ppManager.passes.fxaa;
+            const outputPass = ppManager.passes.output;
+            const hdrTarget = ppManager.hdrRenderTarget;
+
+            ppManager.dispose();
+
+            expect(ssaoPass.dispose).toHaveBeenCalled();
+            expect(bloomPass.dispose).toHaveBeenCalled();
+            expect(fxaaPass.dispose).toHaveBeenCalled();
+            expect(outputPass.dispose).toHaveBeenCalled();
+            expect(mockComposer.dispose).toHaveBeenCalled();
+            expect(hdrTarget.dispose).toHaveBeenCalled();
+            expect(ppManager.composer).toBeNull();
+            expect(ppManager.passes).toEqual({});
         });
     });
 });
