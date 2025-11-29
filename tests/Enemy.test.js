@@ -160,7 +160,7 @@ describe('Enemy', () => {
         });
 
         test('should return goblin drops', () => {
-            const enemy = new Enemy(0, 0, 'GOBLIN_2');
+            const enemy = new Enemy(0, 0, 'GOBLIN_LEVEL_2');
             const dropTable = enemy.dropTable;
 
             expect(dropTable).toContainEqual({ item: ITEMS.BONES, chance: 1.0 });
