@@ -3,39 +3,13 @@
  * TypeScript version with full type safety
  */
 
+import type * as THREE from 'three';
 import { ATTACK_COOLDOWN, COMBAT_RANGE, SKILLS, ITEMS } from '../utils/Constants';
 import { XPCalculator } from '../utils/XPCalculator';
 import type { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
 import type { SkillName, OSRSItem } from '../types/index';
-
-/**
- * UI Manager interface for type safety
- */
-interface UIManager {
-    addMessage(message: string, type?: string): void;
-    updateStats(): void;
-    updateInventory(): void;
-}
-
-/**
- * Loot System interface for type safety
- */
-interface LootSystem {
-    generateLoot(enemyId: string): Array<{ item: string; quantity: number }>;
-}
-
-/**
- * Game Logic interface for type safety
- */
-interface GameLogic {
-    player: Player;
-    ui: UIManager;
-    lootSystem?: LootSystem;
-    createDamageSplash(position: THREE.Vector3, damage: number): void;
-}
-
-import type * as THREE from 'three';
+import type { IGameLogicContext } from '../types/game';
 
 /**
  * Combatant interface for entities that can participate in combat
@@ -49,7 +23,7 @@ interface Combatant {
         strength: number;
     };
     position: THREE.Vector3;
-    isDead?: boolean;
+    isDead?: boolean | (() => boolean);
     name: string;
 }
 
@@ -57,12 +31,12 @@ interface Combatant {
  * CombatSystem class - Handles OSRS-style combat
  */
 export class CombatSystem {
-    private gameLogic: GameLogic;
+    private gameLogic: IGameLogicContext;
     private player: Player;
     private combatQueue: Enemy[];
     private attackTimer: number;
 
-    constructor(gameLogic: GameLogic) {
+    constructor(gameLogic: IGameLogicContext) {
         this.gameLogic = gameLogic;
         this.player = gameLogic.player;
         this.combatQueue = [];
@@ -147,7 +121,7 @@ export class CombatSystem {
         }
 
         // Calculate damage
-        const damage = this.calculateHit(this.player as unknown as Combatant, target as unknown as Combatant);
+        const damage = this.calculateHit(this.player, target);
 
         if (damage === 0) {
             this.gameLogic.ui.addMessage(`You missed!`, 'game');

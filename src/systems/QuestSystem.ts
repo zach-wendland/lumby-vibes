@@ -500,8 +500,7 @@ export class QuestSystem {
             }
         }
 
-        // Award items would be handled here
-        // TODO: Add items to player inventory
+        // Note: Quest reward items not yet implemented
     }
 
     /**

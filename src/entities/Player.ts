@@ -38,6 +38,10 @@ interface BodyParts {
  * Player class - Main player character entity
  */
 export class Player {
+    // Identity
+    name: string;
+    isMember: boolean;
+
     // Position and movement
     position: THREE.Vector3;
     rotation: number;
@@ -67,6 +71,8 @@ export class Player {
     bodyParts: BodyParts | null;
 
     constructor(x: number = 0, z: number = 0) {
+        this.name = 'Player';
+        this.isMember = false; // F2P by default
         this.position = new THREE.Vector3(x, 0, z);
         this.rotation = 0;
         this.targetPosition = null;

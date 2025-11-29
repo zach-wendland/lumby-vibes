@@ -39,9 +39,9 @@ interface GameClickDetail {
  * GameEngine class - Core Three.js rendering engine
  */
 export class GameEngine {
-    public scene!: THREE.Scene;
-    public camera!: THREE.PerspectiveCamera;
-    public renderer!: THREE.WebGLRenderer;
+    public scene: THREE.Scene | null;
+    public camera: THREE.PerspectiveCamera | null;
+    public renderer: THREE.WebGLRenderer | null;
     public clock: THREE.Clock;
     public delta: number;
     public raycaster: THREE.Raycaster;
@@ -71,9 +71,9 @@ export class GameEngine {
         this.raycaster = new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
         this.canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null;
-        this.scene = null as unknown as THREE.Scene;
-        this.camera = null as unknown as THREE.PerspectiveCamera;
-        this.renderer = null as unknown as THREE.WebGLRenderer;
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
 
         this.entities = [];
         this.updateCallbacks = [];

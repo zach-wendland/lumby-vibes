@@ -7,6 +7,7 @@ import { XPCalculator } from '../utils/XPCalculator';
 import type { Player } from '../entities/Player';
 import type { NPC } from '../entities/NPC';
 import type { Enemy } from '../entities/Enemy';
+import type { IShopSystemContext } from '../types/game';
 
 /**
  * Context menu option interface
@@ -22,21 +23,14 @@ interface ContextMenuOption {
 type MessageType = 'game' | 'system' | 'chat';
 
 /**
- * GameLogic interface for type safety
- */
-interface GameLogic {
-    player: Player;
-}
-
-/**
  * UIManager class - Handles all UI updates and interactions
  */
 export class UIManager {
-    private gameLogic: GameLogic;
+    private gameLogic: IShopSystemContext;
     private player: Player;
     private currentTab: string;
 
-    constructor(gameLogic: GameLogic) {
+    constructor(gameLogic: IShopSystemContext) {
         this.gameLogic = gameLogic;
         this.player = gameLogic.player;
 
@@ -270,7 +264,7 @@ export class UIManager {
         if (!item) return;
 
         this.addMessage(`You attempt to use ${item.name}...`, 'game');
-        // TODO: Implement item usage (eating food, etc.)
+        // Note: Item usage (eating food, potions, etc.) not yet implemented
     }
 
     /**
@@ -281,7 +275,7 @@ export class UIManager {
         if (item) {
             this.addMessage(`You drop ${item.name}.`, 'game');
             this.updateInventory();
-            // TODO: Create ground item
+            // Note: Ground items not yet implemented - items are lost when dropped
         }
     }
 
@@ -412,7 +406,7 @@ export class UIManager {
     showLevelUp(skill: string, level: number): void {
         this.addMessage(`Congratulations! You have advanced a ${skill} level! You are now level ${level}.`, 'game');
 
-        // TODO: Add visual level up effect
+        // Note: Visual level up effects (fireworks, etc.) not yet implemented
     }
 }
 
