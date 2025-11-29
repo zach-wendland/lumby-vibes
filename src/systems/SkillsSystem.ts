@@ -6,6 +6,7 @@
 import { SKILLS, ITEMS } from '../utils/Constants';
 import type { Player } from '../entities/Player';
 import type { SkillName, OSRSItem } from '../types/index';
+import type { ISkillsSystemContext } from '../types/game';
 
 /**
  * Resource node interface
@@ -20,23 +21,6 @@ interface Resource {
     respawnTimer: number;
     deplete(): void;
     respawn(): void;
-}
-
-/**
- * UI Manager interface
- */
-interface UIManager {
-    addMessage(message: string, type?: string): void;
-    updateStats(): void;
-    updateInventory(): void;
-}
-
-/**
- * Game Logic interface
- */
-interface GameLogic {
-    player: Player;
-    ui: UIManager;
 }
 
 /**
@@ -72,11 +56,11 @@ const ITEM_MAP: Record<string, OSRSItem> = {
  * SkillsSystem class - Handles gathering skills
  */
 export class SkillsSystem {
-    private gameLogic: GameLogic;
+    private gameLogic: ISkillsSystemContext;
     private player: Player;
     private resources: Resource[];
 
-    constructor(gameLogic: GameLogic) {
+    constructor(gameLogic: ISkillsSystemContext) {
         this.gameLogic = gameLogic;
         this.player = gameLogic.player;
         this.resources = [];

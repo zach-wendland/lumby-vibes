@@ -1,4 +1,4 @@
-import { GameEngine } from '../src/engine/GameEngine.ts';
+import { GameEngine } from '../src/engine/GameEngine';
 
 const mockRendererDispose = jest.fn();
 const mockRendererForceContextLoss = jest.fn();

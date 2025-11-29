@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a faithful recreation of RuneScape's Lumbridge using Three.js with enhanced 64-bit HDR graphics. The project features authentic OSRS mechanics including combat, skills, inventory, equipment, quests, NPCs, and enemies, with physically-based rendering and advanced post-processing effects.
+This is a RuneScape-inspired 3D browser game recreating Lumbridge using Three.js. The project implements basic OSRS-style mechanics including combat, skills, inventory, equipment, quests, NPCs, and enemies. It uses modern WebGL rendering with PBR materials and post-processing.
 
 ## Development Commands
 
@@ -23,7 +23,7 @@ npm run test:coverage   # Generate coverage report
 
 The test suite uses Jest with jsdom environment and Babel for ES6+ module transpilation. Tests mock Three.js and DOM elements to avoid canvas/WebGL issues in the Node.js test environment.
 
-**Coverage thresholds**: 70% for branches, functions, lines, and statements (configured in package.json).
+**Note**: Main game files (GameLogic, UIManager, Lumbridge, PostProcessingManager) are excluded from coverage as they're difficult to test in isolation. Current test suite covers system logic and entity behavior with 70% coverage thresholds.
 
 ## Architecture
 

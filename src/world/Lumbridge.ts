@@ -95,7 +95,7 @@ export class Lumbridge {
         this.terrain.receiveShadow = true;
         this.terrain.userData.type = 'terrain';
 
-        this.engine.scene.add(this.terrain);
+        this.engine.scene!.add(this.terrain);
     }
 
     /**
@@ -116,7 +116,7 @@ export class Lumbridge {
         river.position.set(20, 0.1, 0);
         river.userData.type = 'river';
 
-        this.engine.scene.add(river);
+        this.engine.scene!.add(river);
 
         // Bridge over river
         this.createBridge(20, 0);
@@ -160,7 +160,7 @@ export class Lumbridge {
         bridgeGroup.add(rightRailing);
 
         bridgeGroup.position.set(x, 0, z);
-        this.engine.scene.add(bridgeGroup);
+        this.engine.scene!.add(bridgeGroup);
     }
 
     /**
@@ -249,7 +249,7 @@ export class Lumbridge {
         castleGroup.userData.type = 'building';
         castleGroup.userData.buildingType = BUILDINGS.LUMBRIDGE_CASTLE;
 
-        this.engine.scene.add(castleGroup);
+        this.engine.scene!.add(castleGroup);
         this.buildings.push(castleGroup);
     }
 
@@ -344,7 +344,7 @@ export class Lumbridge {
         churchGroup.userData.type = 'building';
         churchGroup.userData.buildingType = BUILDINGS.CHURCH;
 
-        this.engine.scene.add(churchGroup);
+        this.engine.scene!.add(churchGroup);
         this.buildings.push(churchGroup);
     }
 
@@ -394,7 +394,7 @@ export class Lumbridge {
         buildingGroup.userData.type = 'building';
         buildingGroup.userData.buildingName = name;
 
-        this.engine.scene.add(buildingGroup);
+        this.engine.scene!.add(buildingGroup);
         this.buildings.push(buildingGroup);
     }
 
@@ -459,7 +459,7 @@ export class Lumbridge {
         // Add NPCs to scene
         for (const npc of this.npcs) {
             if (npc.mesh) {
-                this.engine.scene.add(npc.mesh);
+                this.engine.scene!.add(npc.mesh);
             }
         }
     }
@@ -487,7 +487,7 @@ export class Lumbridge {
         // Add enemies to scene
         for (const enemy of this.enemies) {
             if (enemy.mesh) {
-                this.engine.scene.add(enemy.mesh);
+                this.engine.scene!.add(enemy.mesh);
             }
         }
     }
@@ -583,7 +583,7 @@ export class Lumbridge {
 
         treeGroup.userData.resource = resource;
 
-        this.engine.scene.add(treeGroup);
+        this.engine.scene!.add(treeGroup);
         this.resources.push(resource);
     }
 
@@ -627,7 +627,7 @@ export class Lumbridge {
 
         rock.userData.resource = resource;
 
-        this.engine.scene.add(rock);
+        this.engine.scene!.add(rock);
         this.resources.push(resource);
     }
 
@@ -662,7 +662,7 @@ export class Lumbridge {
 
         spot.userData.resource = resource;
 
-        this.engine.scene.add(spot);
+        this.engine.scene!.add(spot);
         this.resources.push(resource);
     }
 
@@ -699,7 +699,7 @@ export class Lumbridge {
         const angle = Math.atan2(z2 - z1, x2 - x1);
         path.rotation.z = angle - Math.PI / 2;
 
-        this.engine.scene.add(path);
+        this.engine.scene!.add(path);
     }
 
     /**
@@ -730,7 +730,7 @@ export class Lumbridge {
         }
 
         fenceGroup.position.set(x, 0, z);
-        this.engine.scene.add(fenceGroup);
+        this.engine.scene!.add(fenceGroup);
     }
 
     /**

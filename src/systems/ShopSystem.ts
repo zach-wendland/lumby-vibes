@@ -5,6 +5,7 @@
 
 import type { Player } from '../entities/Player';
 import type { SkillName, OSRSItem } from '../types/index';
+import type { IShopSystemContext } from '../types/game';
 
 /**
  * Shop item definition
@@ -64,12 +65,6 @@ interface OpenShopResult {
     shop?: ShopState;
 }
 
-/**
- * GameLogic interface for type safety
- */
-interface GameLogic {
-    player: Player & { isMember?: boolean };
-}
 
 /**
  * All shop definitions
@@ -188,15 +183,15 @@ export const SHOPS: Record<string, ShopDefinition> = {
  * ShopSystem class - Handles shop operations
  */
 export class ShopSystem {
-    private gameLogic: GameLogic;
-    private player: Player & { isMember?: boolean };
+    private gameLogic: IShopSystemContext;
+    private player: Player;
     private shops: Map<string, ShopState>;
     private currentShop: ShopState | null;
     private restockTimers: Map<string, ReturnType<typeof setTimeout>>;
 
-    constructor(gameLogic: GameLogic) {
+    constructor(gameLogic: IShopSystemContext) {
         this.gameLogic = gameLogic;
-        this.player = gameLogic.player as Player & { isMember?: boolean };
+        this.player = gameLogic.player;
         this.shops = new Map();
         this.currentShop = null;
         this.restockTimers = new Map();

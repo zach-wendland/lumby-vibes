@@ -16,6 +16,7 @@ import { UIManager } from '../ui/UIManager';
 import { CAMERA } from '../utils/Constants';
 import type { Enemy } from '../entities/Enemy';
 import type { NPC } from '../entities/NPC';
+import type { IGameLogicContext, ISkillsSystemContext, IShopSystemContext } from '../types/game';
 
 /**
  * Context menu option interface
@@ -203,17 +204,17 @@ export class GameLogic {
             this.world.create();
             this.engine.updateLoadingProgress(70);
 
-            // Create systems
+            // Create systems (player is guaranteed non-null at this point)
             console.log('Init: Creating combat system...');
-            this.combatSystem = new CombatSystem(this as unknown as { player: Player; ui: UIManager; lootSystem?: LootSystem; createDamageSplash: (position: THREE.Vector3, damage: number) => void });
+            this.combatSystem = new CombatSystem(this as IGameLogicContext);
             console.log('Init: Creating skills system...');
-            this.skillsSystem = new SkillsSystem(this as unknown as { player: Player; ui: UIManager });
+            this.skillsSystem = new SkillsSystem(this as ISkillsSystemContext);
             console.log('Init: Creating quest system...');
             this.questSystem = new QuestSystem(this.player);
             console.log('Init: Creating loot system...');
             this.lootSystem = new LootSystem();
             console.log('Init: Creating shop system...');
-            this.shopSystem = new ShopSystem(this as unknown as { player: Player });
+            this.shopSystem = new ShopSystem(this as IShopSystemContext);
 
             // Add world resources to skills system
             console.log('Init: Adding resources...');
@@ -229,9 +230,9 @@ export class GameLogic {
             console.log('Init: Setting up controls...');
             this.setupControls();
 
-            // Initialize UI
+            // Initialize UI (player is guaranteed non-null at this point)
             console.log('Init: Initializing UI...');
-            this.ui = new UIManager(this as unknown as { player: Player });
+            this.ui = new UIManager(this as IShopSystemContext);
             this.ui.updateStats();
             this.ui.updateInventory();
             this.ui.addMessage('Welcome to Lumbridge!', 'game');
