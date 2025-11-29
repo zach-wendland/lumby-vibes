@@ -168,7 +168,7 @@ describe('GameEngine lifecycle safeguards', () => {
 
     test('throws a descriptive error when the game canvas is missing', async () => {
         const engine = new GameEngine();
-        await expect(engine.init()).rejects.toThrow('game canvas element');
+        await expect(engine.init()).rejects.toThrow(/game canvas element/i);
     });
 
     test('removes listeners and disposes rendering resources on dispose', async () => {

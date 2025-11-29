@@ -90,6 +90,16 @@ export class GameLogic {
 
     private damageSplashes: DamageSplash[];
 
+    // Event handler references for cleanup
+    private handleKeyDown: (e: KeyboardEvent) => void;
+    private handleKeyUp: (e: KeyboardEvent) => void;
+    private handleMouseDown: (e: MouseEvent) => void;
+    private handleMouseUp: (e: MouseEvent) => void;
+    private handleMouseMove: (e: MouseEvent) => void;
+    private handleWheel: (e: WheelEvent) => void;
+    private handleGameClick: (e: Event) => void;
+    private handleLevelUp: (e: Event) => void;
+
     constructor() {
         this.engine = new GameEngine();
         this.player = null;
@@ -112,6 +122,63 @@ export class GameLogic {
         this.lastMouseY = 0;
 
         this.damageSplashes = [];
+
+        // Initialize event handlers
+        this.handleKeyDown = (e: KeyboardEvent) => {
+            this.keys[e.code] = true;
+        };
+
+        this.handleKeyUp = (e: KeyboardEvent) => {
+            this.keys[e.code] = false;
+        };
+
+        this.handleMouseDown = (e: MouseEvent) => {
+            if (e.button === 1) { // Middle mouse button
+                this.mouseDown = true;
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+                e.preventDefault();
+            }
+        };
+
+        this.handleMouseUp = (e: MouseEvent) => {
+            if (e.button === 1) {
+                this.mouseDown = false;
+            }
+        };
+
+        this.handleMouseMove = (e: MouseEvent) => {
+            if (this.mouseDown) {
+                const deltaX = e.clientX - this.lastMouseX;
+                const deltaY = e.clientY - this.lastMouseY;
+
+                this.cameraRotation -= deltaX * 0.005;
+                this.cameraAngle = Math.max(0.1, Math.min(Math.PI / 2.5, this.cameraAngle + deltaY * 0.005));
+
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+
+                this.updateCamera();
+            }
+        };
+
+        this.handleWheel = (e: WheelEvent) => {
+            this.cameraDistance = Math.max(
+                CAMERA.MIN_DISTANCE,
+                Math.min(CAMERA.MAX_DISTANCE, this.cameraDistance + e.deltaY * 0.01)
+            );
+            this.updateCamera();
+        };
+
+        this.handleGameClick = ((e: CustomEvent<GameClickDetail>) => {
+            this.handleGameClickEvent(e.detail);
+        }) as EventListener;
+
+        this.handleLevelUp = ((e: CustomEvent<LevelUpDetail>) => {
+            if (this.ui) {
+                this.ui.showLevelUp(e.detail.skill, e.detail.level);
+            }
+        }) as EventListener;
     }
 
     /**
@@ -224,53 +291,16 @@ export class GameLogic {
      */
     setupControls(): void {
         // Keyboard
-        window.addEventListener('keydown', (e: KeyboardEvent) => {
-            this.keys[e.code] = true;
-        });
-
-        window.addEventListener('keyup', (e: KeyboardEvent) => {
-            this.keys[e.code] = false;
-        });
+        window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
 
         // Mouse camera rotation
-        window.addEventListener('mousedown', (e: MouseEvent) => {
-            if (e.button === 1) { // Middle mouse button
-                this.mouseDown = true;
-                this.lastMouseX = e.clientX;
-                this.lastMouseY = e.clientY;
-                e.preventDefault();
-            }
-        });
-
-        window.addEventListener('mouseup', (e: MouseEvent) => {
-            if (e.button === 1) {
-                this.mouseDown = false;
-            }
-        });
-
-        window.addEventListener('mousemove', (e: MouseEvent) => {
-            if (this.mouseDown) {
-                const deltaX = e.clientX - this.lastMouseX;
-                const deltaY = e.clientY - this.lastMouseY;
-
-                this.cameraRotation -= deltaX * 0.005;
-                this.cameraAngle = Math.max(0.1, Math.min(Math.PI / 2.5, this.cameraAngle + deltaY * 0.005));
-
-                this.lastMouseX = e.clientX;
-                this.lastMouseY = e.clientY;
-
-                this.updateCamera();
-            }
-        });
+        window.addEventListener('mousedown', this.handleMouseDown);
+        window.addEventListener('mouseup', this.handleMouseUp);
+        window.addEventListener('mousemove', this.handleMouseMove);
 
         // Mouse wheel zoom
-        window.addEventListener('wheel', (e: WheelEvent) => {
-            this.cameraDistance = Math.max(
-                CAMERA.MIN_DISTANCE,
-                Math.min(CAMERA.MAX_DISTANCE, this.cameraDistance + e.deltaY * 0.01)
-            );
-            this.updateCamera();
-        });
+        window.addEventListener('wheel', this.handleWheel);
     }
 
     /**
@@ -278,22 +308,16 @@ export class GameLogic {
      */
     setupEventListeners(): void {
         // Click events
-        window.addEventListener('gameClick', ((e: CustomEvent<GameClickDetail>) => {
-            this.handleGameClick(e.detail);
-        }) as EventListener);
+        window.addEventListener('gameClick', this.handleGameClick);
 
         // Level up events
-        window.addEventListener('levelUp', ((e: CustomEvent<LevelUpDetail>) => {
-            if (this.ui) {
-                this.ui.showLevelUp(e.detail.skill, e.detail.level);
-            }
-        }) as EventListener);
+        window.addEventListener('levelUp', this.handleLevelUp);
     }
 
     /**
      * Handle game world clicks
      */
-    handleGameClick(detail: GameClickDetail): void {
+    handleGameClickEvent(detail: GameClickDetail): void {
         if (!this.player || !this.ui || !this.combatSystem || !this.skillsSystem) return;
 
         const { object, point, button, mouseX, mouseY } = detail;
@@ -547,6 +571,60 @@ export class GameLogic {
      */
     render(): void {
         // Additional rendering if needed
+    }
+
+    /**
+     * Dispose of resources and event listeners
+     */
+    dispose(): void {
+        // Stop the engine
+        if (this.engine) {
+            this.engine.stop();
+        }
+
+        // Remove all event listeners
+        if (typeof window !== 'undefined') {
+            window.removeEventListener('keydown', this.handleKeyDown);
+            window.removeEventListener('keyup', this.handleKeyUp);
+            window.removeEventListener('mousedown', this.handleMouseDown);
+            window.removeEventListener('mouseup', this.handleMouseUp);
+            window.removeEventListener('mousemove', this.handleMouseMove);
+            window.removeEventListener('wheel', this.handleWheel);
+            window.removeEventListener('gameClick', this.handleGameClick);
+            window.removeEventListener('levelUp', this.handleLevelUp);
+        }
+
+        // Dispose engine resources
+        if (this.engine) {
+            this.engine.dispose();
+        }
+
+        // Clear damage splashes
+        if (this.damageSplashes && this.damageSplashes.length > 0) {
+            this.damageSplashes.forEach(splash => {
+                if (splash.sprite && splash.sprite.parent) {
+                    splash.sprite.parent.remove(splash.sprite);
+                }
+            });
+            this.damageSplashes = [];
+        }
+
+        // Clear references to systems
+        this.combatSystem = null;
+        this.skillsSystem = null;
+        this.questSystem = null;
+        this.lootSystem = null;
+        this.shopSystem = null;
+        this.ui = null;
+
+        // Clear references to entities and world
+        this.player = null;
+        this.world = null;
+        this.camera = null;
+
+        // Clear keys
+        this.keys = {};
+        this.mouseDown = false;
     }
 }
 
