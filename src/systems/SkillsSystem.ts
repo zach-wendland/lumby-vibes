@@ -218,6 +218,14 @@ export class SkillsSystem {
     clearResources(): void {
         this.resources = [];
     }
+
+    /**
+     * Dispose of resources and clean up
+     */
+    dispose(): void {
+        // Clear all resource references
+        this.clearResources();
+    }
 }
 
 export default SkillsSystem;

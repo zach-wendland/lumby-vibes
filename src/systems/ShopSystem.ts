@@ -461,6 +461,23 @@ export class ShopSystem {
     update(delta: number): void {
         // Could add dynamic pricing based on stock levels
     }
+
+    /**
+     * Dispose of resources and clean up
+     */
+    dispose(): void {
+        // Clear all restock timers
+        for (const timer of this.restockTimers.values()) {
+            clearTimeout(timer);
+        }
+        this.restockTimers.clear();
+
+        // Close current shop
+        this.currentShop = null;
+
+        // Clear shop references
+        this.shops.clear();
+    }
 }
 
 export default ShopSystem;

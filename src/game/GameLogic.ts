@@ -610,6 +610,23 @@ export class GameLogic {
             this.damageSplashes = [];
         }
 
+        // Dispose of all systems before clearing references
+        if (this.combatSystem) {
+            this.combatSystem.dispose();
+        }
+        if (this.skillsSystem) {
+            this.skillsSystem.dispose();
+        }
+        if (this.shopSystem) {
+            this.shopSystem.dispose();
+        }
+        if (this.ui) {
+            this.ui.dispose();
+        }
+        if (this.world) {
+            this.world.dispose();
+        }
+
         // Clear references to systems
         this.combatSystem = null;
         this.skillsSystem = null;
