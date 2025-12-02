@@ -263,6 +263,20 @@ export class CombatSystem {
     getAttackCooldown(): number {
         return Math.max(0, this.attackTimer);
     }
+
+    /**
+     * Dispose of resources and clean up
+     */
+    dispose(): void {
+        // Stop any ongoing combat
+        this.stopCombat();
+
+        // Clear combat queue
+        this.combatQueue = [];
+
+        // Reset attack timer
+        this.attackTimer = 0;
+    }
 }
 
 export default CombatSystem;

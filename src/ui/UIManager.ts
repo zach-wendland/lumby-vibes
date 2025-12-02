@@ -414,6 +414,19 @@ export class UIManager {
 
         // TODO: Add visual level up effect
     }
+
+    /**
+     * Dispose of resources and clean up
+     * Note: Full event listener cleanup would require refactoring to store handler references
+     */
+    dispose(): void {
+        // Clear current tab reference
+        this.currentTab = '';
+
+        // Note: Event listeners on DOM elements (tab buttons, chat input, inventory slots, context menus)
+        // would need to be explicitly removed if handler references were stored during setupEventListeners()
+        // For now, relying on browser garbage collection when elements are removed from DOM
+    }
 }
 
 export default UIManager;

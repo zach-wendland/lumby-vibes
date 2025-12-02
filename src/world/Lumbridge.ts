@@ -747,6 +747,44 @@ export class Lumbridge {
             enemy.update(delta, player);
         }
     }
+
+    /**
+     * Dispose of resources and clean up
+     */
+    dispose(): void {
+        // Remove terrain from scene
+        if (this.terrain && this.terrain.parent) {
+            this.terrain.parent.remove(this.terrain);
+            this.terrain = null;
+        }
+
+        // Remove buildings from scene
+        for (const building of this.buildings) {
+            if (building.parent) {
+                building.parent.remove(building);
+            }
+        }
+        this.buildings = [];
+
+        // Remove NPC meshes from scene and clear array
+        for (const npc of this.npcs) {
+            if (npc.mesh && npc.mesh.parent) {
+                npc.mesh.parent.remove(npc.mesh);
+            }
+        }
+        this.npcs = [];
+
+        // Remove enemy meshes from scene and clear array
+        for (const enemy of this.enemies) {
+            if (enemy.mesh && enemy.mesh.parent) {
+                enemy.mesh.parent.remove(enemy.mesh);
+            }
+        }
+        this.enemies = [];
+
+        // Clear resources array
+        this.resources = [];
+    }
 }
 
 export default Lumbridge;

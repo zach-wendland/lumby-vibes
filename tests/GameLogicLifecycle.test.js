@@ -42,15 +42,26 @@ describe('GameLogic lifecycle safeguards', () => {
     test('dispose clears all system references', () => {
         const gameLogic = new GameLogic();
 
-        // Set some mock systems (would normally be set during init)
-        gameLogic.combatSystem = {};
-        gameLogic.skillsSystem = {};
+        // Set some mock systems with dispose methods (would normally be set during init)
+        const combatDispose = jest.fn();
+        const skillsDispose = jest.fn();
+        const shopDispose = jest.fn();
+        const uiDispose = jest.fn();
+
+        gameLogic.combatSystem = { dispose: combatDispose };
+        gameLogic.skillsSystem = { dispose: skillsDispose };
         gameLogic.questSystem = {};
         gameLogic.lootSystem = {};
-        gameLogic.shopSystem = {};
-        gameLogic.ui = {};
+        gameLogic.shopSystem = { dispose: shopDispose };
+        gameLogic.ui = { dispose: uiDispose };
 
         gameLogic.dispose();
+
+        // Verify dispose was called on systems that have it
+        expect(combatDispose).toHaveBeenCalled();
+        expect(skillsDispose).toHaveBeenCalled();
+        expect(shopDispose).toHaveBeenCalled();
+        expect(uiDispose).toHaveBeenCalled();
 
         // Verify all systems are cleared
         expect(gameLogic.combatSystem).toBeNull();
@@ -64,11 +75,15 @@ describe('GameLogic lifecycle safeguards', () => {
     test('dispose clears entity and world references', () => {
         const gameLogic = new GameLogic();
 
-        // Set some mock references
+        // Set some mock references with dispose method
+        const worldDispose = jest.fn();
         gameLogic.player = {};
-        gameLogic.world = {};
+        gameLogic.world = { dispose: worldDispose };
 
         gameLogic.dispose();
+
+        // Verify dispose was called on world
+        expect(worldDispose).toHaveBeenCalled();
 
         // Verify all references are cleared
         expect(gameLogic.player).toBeNull();
