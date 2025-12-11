@@ -290,10 +290,21 @@ describe('Enemy', () => {
             expect(enemy.mesh.visible).toBe(false);
         });
 
-        test('should generate loot', () => {
+        test('should set death state correctly', () => {
             const enemy = new Enemy(0, 0, 'CHICKEN');
 
-            const loot = enemy.die();
+            enemy.die();
+
+            expect(enemy.isDead).toBe(true);
+            expect(enemy.inCombat).toBe(false);
+            expect(enemy.target).toBeNull();
+            expect(enemy.respawnTimer).toBe(enemy.respawnTime);
+        });
+
+        test('generateLoot should generate loot', () => {
+            const enemy = new Enemy(0, 0, 'CHICKEN');
+
+            const loot = enemy.generateLoot();
 
             expect(Array.isArray(loot)).toBe(true);
             // Chicken always drops bones

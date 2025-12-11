@@ -6,6 +6,7 @@
 import type { Player } from '../entities/Player';
 import type { SkillName, OSRSItem } from '../types/index';
 import type { IShopSystemContext } from '../types/game';
+import { ITEMS } from '../utils/Constants';
 
 /**
  * Shop item definition
@@ -154,6 +155,46 @@ export const SHOPS: Record<string, ShopDefinition> = {
         memberOnly: false
     },
 
+    RANCH_STORE: {
+        id: 'ranch_store',
+        name: 'Lumbridge Ranch Supply',
+        owner: 'Gillie Groats',
+        location: 'Lumbridge Cow Pen',
+        type: 'specialty',
+        currency: 'coins',
+        items: [
+            {
+                id: 'bucket_of_milk',
+                name: 'Bucket of milk',
+                stock: 10,
+                maxStock: 10,
+                buyPrice: 12,
+                sellPrice: 7,
+                description: 'Fresh milk from Lumbridge cows.'
+            },
+            {
+                id: 'cowhide_pack',
+                name: 'Cowhide pack',
+                stock: 5,
+                maxStock: 5,
+                buyPrice: 200,
+                sellPrice: 120,
+                description: 'Bundle of tanned cowhides.'
+            },
+            {
+                id: 'hay_bale',
+                name: 'Hay bale',
+                stock: 15,
+                maxStock: 15,
+                buyPrice: 35,
+                sellPrice: 20,
+                description: 'Feed for ranch animals.'
+            }
+        ],
+        restockRate: 5000,
+        memberOnly: true
+    },
+
     GENERAL_STORE: {
         id: 'general_store',
         name: 'Lumbridge General Store',
@@ -283,9 +324,19 @@ export class ShopSystem {
         this.removePlayerCoins(totalCost);
         item.stock -= quantity;
 
+        const itemDef = ITEMS[item.id.toUpperCase()];
+        const itemToAdd: OSRSItem = itemDef
+            ? { ...itemDef }
+            : {
+                id: Number.isFinite(Number(item.id)) ? Number(item.id) : 0,
+                name: item.name,
+                stackable: false,
+                value: item.sellPrice
+            };
+
         // Add item to inventory
         for (let i = 0; i < quantity; i++) {
-            this.player.addItem({ id: parseInt(item.id) || 0, name: item.name, stackable: false, value: item.sellPrice }, 1);
+            this.player.addItem(itemToAdd, 1);
         }
 
         this.scheduleRestock(this.currentShop.id, itemId);
@@ -312,7 +363,18 @@ export class ShopSystem {
             return { success: false, message: 'No item in that slot!' };
         }
 
-        const shopItem = this.currentShop.items.find(i => i.id === playerItem.id?.toString());
+        const shopItem = this.currentShop.items.find(i => {
+            // Look up the shop item in ITEMS to get its numeric ID
+            const shopDef = ITEMS[i.id.toUpperCase()];
+            if (shopDef && playerItem.id === shopDef.id) {
+                return true;
+            }
+            // Fall back to direct string comparison for testing/compatibility
+            if (typeof i.id === 'string' && typeof playerItem.id === 'string') {
+                return i.id.toLowerCase() === (playerItem.id as string).toLowerCase();
+            }
+            return false;
+        });
 
         if (!this.currentShop.buysItems && !shopItem) {
             return { success: false, message: "This shop doesn't buy that item!" };
@@ -403,7 +465,7 @@ export class ShopSystem {
      */
     addPlayerCoins(amount: number): void {
         for (const item of this.player.inventory) {
-            if (item && item.id === 995) {
+            if (item && item.id === 995) { // Coins ID
                 (item as { count: number }).count += amount;
                 return;
             }
@@ -418,7 +480,7 @@ export class ShopSystem {
     removePlayerCoins(amount: number): boolean {
         for (let i = 0; i < this.player.inventory.length; i++) {
             const item = this.player.inventory[i];
-            if (item && item.id === 995) {
+            if (item && item.id === 995) { // Coins ID
                 const itemWithCount = item as { count: number };
                 itemWithCount.count -= amount;
                 if (itemWithCount.count <= 0) {

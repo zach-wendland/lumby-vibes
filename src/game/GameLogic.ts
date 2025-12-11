@@ -209,6 +209,12 @@ export class GameLogic {
             this.combatSystem = new CombatSystem(this as IGameLogicContext);
             console.log('Init: Creating skills system...');
             this.skillsSystem = new SkillsSystem(this as ISkillsSystemContext);
+            if (this.world) {
+                // Register all world resources so depletion/respawn works
+                for (const resource of this.world.getResources()) {
+                    this.skillsSystem.addResource(resource);
+                }
+            }
             console.log('Init: Creating quest system...');
             this.questSystem = new QuestSystem(this.player);
             console.log('Init: Creating loot system...');
@@ -531,6 +537,11 @@ export class GameLogic {
                 if (this.engine.scene) {
                     this.engine.scene.remove(splash.sprite);
                 }
+                // Dispose texture and material to prevent memory leaks
+                if (splash.sprite.material.map) {
+                    splash.sprite.material.map.dispose();
+                }
+                splash.sprite.material.dispose();
                 this.damageSplashes.splice(i, 1);
             } else {
                 const progress = elapsed / splash.duration;

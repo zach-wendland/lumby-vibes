@@ -39,7 +39,7 @@ describe('ShopSystem', () => {
             })
         };
 
-        // Add coins to inventory (using numeric ID 995 for coins)
+        // Add coins to inventory (using OSRS item ID 995 for coins)
         mockPlayer.inventory[0] = { id: 995, name: 'Coins', count: 50000, stackable: true };
 
         mockGameLogic = {

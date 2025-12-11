@@ -2,13 +2,11 @@ import { GameEngine } from '../src/engine/GameEngine';
 
 const mockRendererDispose = jest.fn();
 const mockRendererForceContextLoss = jest.fn();
-const mockRenderTargetDispose = jest.fn();
-const mockRenderTargetSetSize = jest.fn();
 
 const mockPostProcessingDispose = jest.fn();
 const mockPostProcessingInit = jest.fn();
 
-jest.mock('../src/engine/PostProcessingManager.ts', () => ({
+jest.mock('../src/engine/PostProcessingManager', () => ({
     PostProcessingManager: jest.fn().mockImplementation(() => ({
         init: mockPostProcessingInit,
         render: jest.fn(),
@@ -49,12 +47,6 @@ jest.mock('three', () => {
         public dispose = mockRendererDispose;
         public forceContextLoss = mockRendererForceContextLoss;
         constructor(_options?: unknown) {}
-    }
-
-    class WebGLRenderTarget {
-        public setSize = mockRenderTargetSetSize;
-        public dispose = mockRenderTargetDispose;
-        constructor(_width: number, _height: number, _options?: unknown) {}
     }
 
     class Clock {
@@ -141,7 +133,6 @@ jest.mock('three', () => {
         Scene,
         PerspectiveCamera,
         WebGLRenderer,
-        WebGLRenderTarget,
         Clock,
         Raycaster,
         Vector2,
@@ -195,7 +186,6 @@ describe('GameEngine lifecycle safeguards', () => {
         );
         expect(mockRendererForceContextLoss).toHaveBeenCalled();
         expect(mockRendererDispose).toHaveBeenCalled();
-        expect(mockRenderTargetDispose).toHaveBeenCalled();
         expect(mockPostProcessingDispose).toHaveBeenCalled();
         expect((engine as unknown as { entities: unknown[] }).entities).toHaveLength(0);
         expect((engine as unknown as { renderCallbacks: unknown[] }).renderCallbacks).toHaveLength(0);

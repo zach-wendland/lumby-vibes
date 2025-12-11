@@ -163,6 +163,7 @@ export class Enemy {
                     { item: ITEMS.RAW_BEEF, chance: 1.0 }
                 ];
             case 'GOBLIN_LEVEL_2':
+            case 'GOBLIN_2':
             case 'GOBLIN_LEVEL_5':
                 return [
                     { item: ITEMS.BONES, chance: 1.0 },
@@ -433,8 +434,9 @@ export class Enemy {
 
     /**
      * Die and start respawn timer
+     * Note: Loot generation is handled by CombatSystem/LootSystem, not here
      */
-    die(): LootItem[] {
+    die(): void {
         this.isDead = true;
         this.inCombat = false;
         this.target = null;
@@ -443,8 +445,6 @@ export class Enemy {
         if (this.mesh) {
             this.mesh.visible = false;
         }
-
-        return this.generateLoot();
     }
 
     /**
@@ -506,7 +506,15 @@ export class Enemy {
 
             const distance = this.position.distanceTo(this.target.position);
 
-            if (distance > 1.5) {
+            if (distance > 20) {
+                this.inCombat = false;
+                this.target = null;
+
+                if (this.bodyParts.leftLeg && this.bodyParts.rightLeg) {
+                    this.bodyParts.leftLeg.rotation.x = 0;
+                    this.bodyParts.rightLeg.rotation.x = 0;
+                }
+            } else if (distance > 1.5) {
                 this.position.addScaledVector(direction, this.speed * delta);
                 this.rotation = Math.atan2(direction.x, direction.z);
 
@@ -516,9 +524,6 @@ export class Enemy {
                     this.bodyParts.leftLeg.rotation.x = leftLegRotation;
                     this.bodyParts.rightLeg.rotation.x = -leftLegRotation;
                 }
-            } else if (distance > 20) {
-                this.inCombat = false;
-                this.target = null;
             }
         } else {
             // Wander behavior
@@ -605,6 +610,34 @@ export class Enemy {
     stopCombat(): void {
         this.inCombat = false;
         this.target = null;
+    }
+
+    /**
+     * Dispose of enemy resources (geometries, materials, textures)
+     */
+    dispose(): void {
+        if (this.mesh) {
+            this.mesh.traverse((object) => {
+                if (object instanceof THREE.Mesh) {
+                    object.geometry.dispose();
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(material => material.dispose());
+                    } else {
+                        object.material.dispose();
+                    }
+                } else if (object instanceof THREE.Sprite) {
+                    if (object.material.map) {
+                        object.material.map.dispose();
+                    }
+                    object.material.dispose();
+                }
+            });
+            this.mesh = null;
+        }
+        this.hpBarBg = null;
+        this.hpBarFill = null;
+        this.nameSprite = null;
+        this.bodyParts = {};
     }
 }
 

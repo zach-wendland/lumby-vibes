@@ -12,6 +12,7 @@ import { PostProcessingManager } from './PostProcessingManager';
 interface Entity {
     mesh?: THREE.Object3D | null;
     update?(delta: number): void;
+    dispose?(): void;
 }
 
 /**
@@ -62,7 +63,6 @@ export class GameEngine {
 
     // 64-bit HDR rendering support
     private supportsHDR: boolean;
-    private renderTarget: THREE.WebGLRenderTarget | null;
     private postProcessing: PostProcessingManager | null;
 
     constructor() {
@@ -84,7 +84,6 @@ export class GameEngine {
 
         // 64-bit HDR rendering support
         this.supportsHDR = false;
-        this.renderTarget = null;
         this.postProcessing = null;
 
         this.handleResize = () => this.onWindowResize();
@@ -98,7 +97,7 @@ export class GameEngine {
      */
     async init(): Promise<void> {
         if (!this.canvas) {
-            throw new Error('Game canvas element with id "game-canvas" not found');
+            throw new Error('game canvas element with id "game-canvas" not found');
         }
 
         // Create scene
@@ -144,7 +143,7 @@ export class GameEngine {
 
         if (this.supportsHDR) {
             console.log('64-bit HDR rendering enabled');
-            this.setupHDRRenderTarget();
+            // Note: HDR render target is managed by PostProcessingManager
         } else {
             console.log('HDR not supported, using standard rendering');
         }
@@ -167,27 +166,6 @@ export class GameEngine {
         this.updateLoadingProgress(30);
     }
 
-    /**
-     * Setup HDR render target for 64-bit rendering
-     */
-    setupHDRRenderTarget(): void {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        // Create HDR render target with floating point texture
-        this.renderTarget = new THREE.WebGLRenderTarget(width, height, {
-            type: THREE.HalfFloatType, // 16-bit per channel (64-bit RGBA)
-            format: THREE.RGBAFormat,
-            colorSpace: THREE.LinearSRGBColorSpace,
-            minFilter: THREE.LinearFilter,
-            magFilter: THREE.LinearFilter,
-            generateMipmaps: false,
-            stencilBuffer: false,
-            depthBuffer: true
-        });
-
-        console.log('HDR render target created with HalfFloatType (64-bit)');
-    }
 
     /**
      * Setup enhanced lighting system with HDR values
@@ -275,15 +253,20 @@ export class GameEngine {
     }
 
     /**
-     * Remove entity from the scene
+     * Remove entity from the scene and dispose of it
      */
     removeEntity(entity: Entity): void {
         if (entity.mesh && this.scene) {
             this.scene.remove(entity.mesh);
         }
+
         const index = this.entities.indexOf(entity);
         if (index > -1) {
             this.entities.splice(index, 1);
+        }
+
+        if (typeof (entity as any).dispose === 'function') {
+            (entity as any).dispose();
         }
     }
 
@@ -310,11 +293,6 @@ export class GameEngine {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-
-        // Resize HDR render target if it exists
-        if (this.renderTarget) {
-            this.renderTarget.setSize(window.innerWidth, window.innerHeight);
-        }
 
         // Resize post-processing
         if (this.postProcessing) {
@@ -459,41 +437,45 @@ export class GameEngine {
     dispose(): void {
         this.stop();
 
+        // Remove event listeners
         if (typeof window !== 'undefined') {
-            window.removeEventListener('resize', this.handleResize, false);
+            window.removeEventListener('resize', this.handleResize);
+            if (this.canvas) {
+                this.canvas.removeEventListener('mousemove', this.handleMouseMove);
+                this.canvas.removeEventListener('click', this.handleClick);
+                this.canvas.removeEventListener('contextmenu', this.handleContextMenu);
+            }
         }
 
-        if (this.canvas) {
-            this.canvas.removeEventListener('mousemove', this.handleMouseMove, false);
-            this.canvas.removeEventListener('click', this.handleClick, false);
-            this.canvas.removeEventListener('contextmenu', this.handleContextMenu, false);
+        // Dispose of entities
+        for (const entity of this.entities) {
+            if (typeof (entity as any).dispose === 'function') {
+                (entity as any).dispose();
+            }
         }
+        this.entities = [];
 
+        // Dispose of post-processing
         if (this.postProcessing) {
             this.postProcessing.dispose();
             this.postProcessing = null;
         }
 
-        if (this.renderTarget) {
-            this.renderTarget.dispose();
-            this.renderTarget = null;
-        }
-
+        // Dispose of renderer
         if (this.renderer) {
-            if (typeof (this.renderer as { forceContextLoss?: () => void }).forceContextLoss === 'function') {
-                (this.renderer as { forceContextLoss: () => void }).forceContextLoss();
+            if (typeof this.renderer.forceContextLoss === 'function') {
+                this.renderer.forceContextLoss();
             }
             this.renderer.dispose();
         }
 
-        if (this.scene && typeof (this.scene as { clear?: () => void }).clear === 'function') {
+        // Clear scene
+        if (this.scene) {
             this.scene.clear();
         }
 
-        this.entities = [];
         this.updateCallbacks = [];
         this.renderCallbacks = [];
-        this.isRunning = false;
     }
 
     /**
