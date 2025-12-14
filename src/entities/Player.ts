@@ -4,7 +4,7 @@
  */
 
 import * as THREE from 'three';
-import { PLAYER_SPEED, SKILLS, COLORS } from '../utils/Constants';
+import { PLAYER_SPEED, SKILLS, COLORS, EQUIPMENT_SLOTS, EQUIPMENT_BONUSES, FOOD_HEALING } from '../utils/Constants';
 import { XPCalculator } from '../utils/XPCalculator';
 import type { SkillName, Skills, SkillData, Equipment, OSRSItem, EquipmentSlot } from '../types/index';
 
@@ -439,6 +439,139 @@ export class Player {
             }
         }
         return false;
+    }
+
+    /**
+     * Equip an item from inventory
+     * @returns true if item was equipped, false if slot not found or item not equippable
+     */
+    equipItem(slot: number): { success: boolean; message: string } {
+        const item = this.inventory[slot];
+        if (!item) {
+            return { success: false, message: 'No item in that slot.' };
+        }
+
+        // Check if item can be equipped
+        const equipSlot = EQUIPMENT_SLOTS[item.id];
+        if (!equipSlot) {
+            return { success: false, message: `You can't equip ${item.name}.` };
+        }
+
+        // If there's already something in that slot, unequip it first
+        const currentEquip = this.equipment[equipSlot];
+        if (currentEquip) {
+            // Try to add current equipment to inventory
+            if (!this.addItem(currentEquip, 1)) {
+                return { success: false, message: 'Not enough inventory space.' };
+            }
+        }
+
+        // Equip the item
+        this.equipment[equipSlot] = item;
+        this.inventory[slot] = null;
+
+        // Recalculate bonuses
+        this.recalculateEquipmentBonuses();
+
+        return { success: true, message: `You equip the ${item.name}.` };
+    }
+
+    /**
+     * Unequip an item to inventory
+     * @returns true if item was unequipped
+     */
+    unequipItem(equipSlot: EquipmentSlot): { success: boolean; message: string } {
+        const item = this.equipment[equipSlot];
+        if (!item) {
+            return { success: false, message: 'Nothing equipped in that slot.' };
+        }
+
+        // Try to add to inventory
+        if (!this.addItem(item, 1)) {
+            return { success: false, message: 'Not enough inventory space.' };
+        }
+
+        // Remove from equipment
+        this.equipment[equipSlot] = null;
+
+        // Recalculate bonuses
+        this.recalculateEquipmentBonuses();
+
+        return { success: true, message: `You unequip the ${item.name}.` };
+    }
+
+    /**
+     * Recalculate equipment bonuses from all equipped items
+     */
+    recalculateEquipmentBonuses(): void {
+        this.equipmentBonuses = { attack: 0, strength: 0, defence: 0 };
+
+        for (const item of Object.values(this.equipment)) {
+            if (item) {
+                const bonuses = EQUIPMENT_BONUSES[item.id];
+                if (bonuses) {
+                    this.equipmentBonuses.attack += bonuses.attack || 0;
+                    this.equipmentBonuses.strength += bonuses.strength || 0;
+                    this.equipmentBonuses.defence += bonuses.defence || 0;
+                }
+            }
+        }
+    }
+
+    /**
+     * Eat food from inventory slot
+     * @returns result with success status and message
+     */
+    eatFood(slot: number): { success: boolean; message: string; healed: number } {
+        const item = this.inventory[slot];
+        if (!item) {
+            return { success: false, message: 'No item in that slot.', healed: 0 };
+        }
+
+        const healAmount = FOOD_HEALING[item.id];
+        if (!healAmount) {
+            return { success: false, message: `You can't eat ${item.name}.`, healed: 0 };
+        }
+
+        // Already at full HP?
+        if (this.currentHP >= this.skills.hitpoints.level) {
+            return { success: false, message: 'You are already at full health.', healed: 0 };
+        }
+
+        // Consume food
+        const oldHP = this.currentHP;
+        this.heal(healAmount);
+        const actualHealed = this.currentHP - oldHP;
+
+        // Remove one from stack
+        if (item.count > 1) {
+            item.count--;
+        } else {
+            this.inventory[slot] = null;
+        }
+
+        return { success: true, message: `You eat the ${item.name}.`, healed: actualHealed };
+    }
+
+    /**
+     * Check if an item is food
+     */
+    isFood(itemId: number): boolean {
+        return FOOD_HEALING[itemId] !== undefined;
+    }
+
+    /**
+     * Check if an item is equippable
+     */
+    isEquippable(itemId: number): boolean {
+        return EQUIPMENT_SLOTS[itemId] !== undefined;
+    }
+
+    /**
+     * Get the equipment slot for an item (or undefined if not equippable)
+     */
+    getEquipmentSlot(itemId: number): EquipmentSlot | undefined {
+        return EQUIPMENT_SLOTS[itemId];
     }
 
     /**

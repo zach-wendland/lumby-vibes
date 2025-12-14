@@ -478,6 +478,17 @@ export class GameLogic {
             })));
         }
 
+        // Add Trade option if NPC has a shop
+        if (npc.shopkeeper && npc.npcData?.shop && typeof npc.npcData.shop === 'string') {
+            const shopId = npc.npcData.shop;
+            menuOptions.push({
+                label: 'Trade',
+                action: () => {
+                    this.ui!.openShop(shopId);
+                }
+            });
+        }
+
         // Add standard talk option
         menuOptions.push(
             {

@@ -92,6 +92,14 @@ export interface ISkillsSystemContext {
  */
 export interface IShopSystemContext {
     readonly player: Player;
+    readonly shopSystem?: {
+        openShop(shopId: string): { success: boolean; message?: string; shop?: unknown };
+        closeShop(): void;
+        buyItem(itemId: string, quantity?: number): { success: boolean; message: string };
+        sellItem(inventorySlot: number, quantity?: number): { success: boolean; message: string };
+        getCurrentShop(): unknown | null;
+        getPlayerCoins(): number;
+    };
 }
 
 /**
