@@ -3,7 +3,7 @@
  * TypeScript version with full type safety
  */
 
-import type { OSRSItem, CameraSettings, GameColors, SkillName } from '../types/index';
+import type { OSRSItem, CameraSettings, GameColors, SkillName, EquipmentSlot } from '../types/index';
 
 // ============ WORLD CONSTANTS ============
 
@@ -137,8 +137,99 @@ export const ITEMS: Record<string, OSRSItem> = {
     DRAGON_SPEAR: { id: 1249, name: 'Dragon spear', stackable: false, value: 37000 },
     // Misc
     BRONZE_ARROW: { id: 882, name: 'Bronze arrow', stackable: true, value: 2 },
-    NEWCOMER_MAP: { id: 550, name: 'Newcomer map', stackable: false, value: 1 }
+    NEWCOMER_MAP: { id: 550, name: 'Newcomer map', stackable: false, value: 1 },
+    // Cooked food
+    COOKED_CHICKEN: { id: 2140, name: 'Cooked chicken', stackable: false, value: 35 },
+    COOKED_MEAT: { id: 2142, name: 'Cooked meat', stackable: false, value: 80 },
+    BREAD: { id: 2309, name: 'Bread', stackable: false, value: 25 },
+    SHRIMPS: { id: 315, name: 'Shrimps', stackable: false, value: 20 }
 } as const;
+
+// ============ EQUIPMENT SLOT MAPPING ============
+
+/**
+ * Maps item IDs to equipment slots
+ */
+export const EQUIPMENT_SLOTS: Record<number, EquipmentSlot> = {
+    // Head
+    [ITEMS.BRONZE_FULL_HELM.id]: 'head',
+    // Body
+    [ITEMS.GOBLIN_MAIL.id]: 'body',
+    // Shield
+    [ITEMS.BRONZE_SQUARE_SHIELD.id]: 'shield',
+    [ITEMS.WOODEN_SHIELD.id]: 'shield',
+    // Weapons (1-handed)
+    [ITEMS.BRONZE_SWORD.id]: 'weapon',
+    [ITEMS.BRONZE_AXE.id]: 'weapon',
+    [ITEMS.BRONZE_PICKAXE.id]: 'weapon',
+    [ITEMS.BRONZE_DAGGER.id]: 'weapon',
+    [ITEMS.BRONZE_SPEAR.id]: 'weapon',
+    [ITEMS.IRON_AXE.id]: 'weapon',
+    [ITEMS.IRON_PICKAXE.id]: 'weapon',
+    [ITEMS.STEEL_AXE.id]: 'weapon',
+    [ITEMS.MITHRIL_AXE.id]: 'weapon',
+    [ITEMS.ADAMANT_AXE.id]: 'weapon',
+    [ITEMS.RUNE_AXE.id]: 'weapon',
+    [ITEMS.RUNE_DAGGER.id]: 'weapon',
+    [ITEMS.RUNE_2H_SWORD.id]: 'weapon',
+    [ITEMS.DRAGON_SPEAR.id]: 'weapon',
+    // Hands
+    [ITEMS.LEATHER_GLOVES.id]: 'hands',
+    // Feet
+    [ITEMS.LEATHER_BOOTS.id]: 'feet',
+    // Neck
+    [ITEMS.AMULET_OF_GHOSTSPEAK.id]: 'neck',
+    // Head (dragon)
+    [ITEMS.DRAGON_MED_HELM.id]: 'head',
+    // Ammo
+    [ITEMS.BRONZE_ARROW.id]: 'ammo',
+    [ITEMS.RUNE_JAVELIN.id]: 'ammo'
+};
+
+// ============ FOOD HEALING ============
+
+/**
+ * Maps food item IDs to HP healed
+ */
+export const FOOD_HEALING: Record<number, number> = {
+    [ITEMS.SHRIMPS.id]: 3,
+    [ITEMS.COOKED_CHICKEN.id]: 3,
+    [ITEMS.COOKED_MEAT.id]: 3,
+    [ITEMS.BREAD.id]: 5,
+    [ITEMS.BEER.id]: 1,
+    [ITEMS.GRAPES.id]: 2
+};
+
+// ============ EQUIPMENT BONUSES ============
+
+/**
+ * Maps item IDs to attack/strength/defence bonuses
+ */
+export const EQUIPMENT_BONUSES: Record<number, { attack?: number; strength?: number; defence?: number }> = {
+    // Weapons
+    [ITEMS.BRONZE_SWORD.id]: { attack: 4, strength: 3 },
+    [ITEMS.BRONZE_DAGGER.id]: { attack: 2, strength: 1 },
+    [ITEMS.BRONZE_AXE.id]: { attack: 3, strength: 2 },
+    [ITEMS.BRONZE_PICKAXE.id]: { attack: 2, strength: 1 },
+    [ITEMS.BRONZE_SPEAR.id]: { attack: 3, strength: 3 },
+    [ITEMS.IRON_AXE.id]: { attack: 6, strength: 4 },
+    [ITEMS.IRON_PICKAXE.id]: { attack: 5, strength: 3 },
+    [ITEMS.STEEL_AXE.id]: { attack: 10, strength: 8 },
+    [ITEMS.MITHRIL_AXE.id]: { attack: 15, strength: 12 },
+    [ITEMS.ADAMANT_AXE.id]: { attack: 22, strength: 18 },
+    [ITEMS.RUNE_AXE.id]: { attack: 32, strength: 26 },
+    [ITEMS.RUNE_DAGGER.id]: { attack: 25, strength: 14 },
+    [ITEMS.RUNE_2H_SWORD.id]: { attack: 69, strength: 70 },
+    [ITEMS.DRAGON_SPEAR.id]: { attack: 55, strength: 60 },
+    // Armor
+    [ITEMS.BRONZE_FULL_HELM.id]: { defence: 4 },
+    [ITEMS.BRONZE_SQUARE_SHIELD.id]: { defence: 5 },
+    [ITEMS.WOODEN_SHIELD.id]: { defence: 2 },
+    [ITEMS.GOBLIN_MAIL.id]: { defence: 2 },
+    [ITEMS.LEATHER_BOOTS.id]: { defence: 1 },
+    [ITEMS.LEATHER_GLOVES.id]: { defence: 1 },
+    [ITEMS.DRAGON_MED_HELM.id]: { defence: 33 }
+};
 
 // ============ NPC TYPES ============
 

@@ -8,6 +8,7 @@ import type { Player } from '../entities/Player';
 import type { NPC } from '../entities/NPC';
 import type { Enemy } from '../entities/Enemy';
 import type { IShopSystemContext } from '../types/game';
+import type { EquipmentSlot } from '../types/index';
 
 /**
  * Context menu option interface
@@ -37,6 +38,7 @@ export class UIManager {
         this.currentTab = 'stats';
         this.setupEventListeners();
         this.setupInventoryGrid();
+        this.setupEquipmentSlots();
     }
 
     /**
@@ -93,6 +95,50 @@ export class UIManager {
     }
 
     /**
+     * Setup equipment slot click handlers
+     */
+    setupEquipmentSlots(): void {
+        const equipmentSlots = document.querySelectorAll('.equipment-slot');
+        equipmentSlots.forEach(slotEl => {
+            const slot = (slotEl as HTMLElement).dataset.slot as EquipmentSlot | undefined;
+            if (!slot) return;
+
+            // Left click - examine
+            slotEl.addEventListener('click', () => {
+                const item = this.player.equipment[slot];
+                if (item) {
+                    this.addMessage(`${item.name}`, 'game');
+                }
+            });
+
+            // Right click - context menu to unequip
+            slotEl.addEventListener('contextmenu', (e: Event) => {
+                e.preventDefault();
+                const item = this.player.equipment[slot];
+                if (!item) return;
+
+                const menu = this.createContextMenu([
+                    { label: 'Remove', action: () => this.unequipItem(slot) },
+                    { label: 'Examine', action: () => this.addMessage(`${item.name}`, 'game') }
+                ]);
+
+                const mouseEvent = e as MouseEvent;
+                menu.style.left = mouseEvent.clientX + 'px';
+                menu.style.top = mouseEvent.clientY + 'px';
+                document.body.appendChild(menu);
+
+                setTimeout(() => {
+                    const removeMenu = (): void => {
+                        menu.remove();
+                        document.removeEventListener('click', removeMenu);
+                    };
+                    document.addEventListener('click', removeMenu);
+                }, 10);
+            });
+        });
+    }
+
+    /**
      * Switch active tab
      */
     switchTab(tabName: string): void {
@@ -117,6 +163,11 @@ export class UIManager {
         // Trigger inventory open callback for tutorial
         if (tabName === 'inventory' && this.onInventoryTabOpen) {
             this.onInventoryTabOpen();
+        }
+
+        // Update equipment display when switching to equipment tab
+        if (tabName === 'equipment') {
+            this.updateEquipment();
         }
     }
 
@@ -218,12 +269,30 @@ export class UIManager {
         const item = this.player.inventory[slot];
         if (!item) return;
 
-        // Create context menu
-        const menu = this.createContextMenu([
+        // Build context menu options based on item type
+        const options: ContextMenuOption[] = [];
+
+        // Add Eat option if food
+        if (this.player.isFood(item.id)) {
+            options.push({ label: 'Eat', action: () => this.eatItem(slot) });
+        }
+
+        // Add Wield/Wear option if equippable
+        if (this.player.isEquippable(item.id)) {
+            const equipSlot = this.player.getEquipmentSlot(item.id);
+            const label = equipSlot === 'weapon' ? 'Wield' : 'Wear';
+            options.push({ label, action: () => this.equipItem(slot) });
+        }
+
+        // Standard options
+        options.push(
             { label: 'Use', action: () => this.useItem(slot) },
             { label: 'Drop', action: () => this.dropItem(slot) },
             { label: 'Examine', action: () => this.examineItem(slot) }
-        ]);
+        );
+
+        // Create context menu
+        const menu = this.createContextMenu(options);
 
         menu.style.left = event.clientX + 'px';
         menu.style.top = event.clientY + 'px';
@@ -292,6 +361,245 @@ export class UIManager {
         if (!item) return;
 
         this.addMessage(`${item.name}`, 'game');
+    }
+
+    /**
+     * Equip item from inventory slot
+     */
+    equipItem(slot: number): void {
+        const result = this.player.equipItem(slot);
+        this.addMessage(result.message, 'game');
+        if (result.success) {
+            this.updateInventory();
+            this.updateEquipment();
+            this.updateStats();
+        }
+    }
+
+    /**
+     * Unequip item from equipment slot
+     */
+    unequipItem(equipSlot: EquipmentSlot): void {
+        const result = this.player.unequipItem(equipSlot);
+        this.addMessage(result.message, 'game');
+        if (result.success) {
+            this.updateInventory();
+            this.updateEquipment();
+            this.updateStats();
+        }
+    }
+
+    /**
+     * Eat food from inventory slot
+     */
+    eatItem(slot: number): void {
+        const result = this.player.eatFood(slot);
+        if (result.success) {
+            this.addMessage(`${result.message} It heals ${result.healed} hitpoints.`, 'game');
+            this.updateInventory();
+            this.updateStats();
+        } else {
+            this.addMessage(result.message, 'game');
+        }
+    }
+
+    /**
+     * Update equipment display
+     */
+    updateEquipment(): void {
+        const equipmentSlots = document.querySelectorAll('.equipment-slot');
+
+        equipmentSlots.forEach(slotEl => {
+            const slot = (slotEl as HTMLElement).dataset.slot as EquipmentSlot | undefined;
+            if (!slot) return;
+
+            const item = this.player.equipment[slot];
+            const htmlEl = slotEl as HTMLElement;
+
+            if (item) {
+                htmlEl.classList.add('has-item');
+                htmlEl.innerHTML = `<div class="equip-item-name">${item.name}</div>`;
+            } else {
+                htmlEl.classList.remove('has-item');
+                // Keep original slot label
+                const slotLabel = slot.charAt(0).toUpperCase() + slot.slice(1);
+                htmlEl.textContent = slotLabel;
+            }
+        });
+
+        // Update equipment stats
+        const attackBonus = document.getElementById('attack-bonus');
+        const defenceBonus = document.getElementById('defence-bonus');
+        const strengthBonus = document.getElementById('strength-bonus');
+
+        if (attackBonus) attackBonus.textContent = this.player.equipmentBonuses.attack.toString();
+        if (defenceBonus) defenceBonus.textContent = this.player.equipmentBonuses.defence.toString();
+        if (strengthBonus) strengthBonus.textContent = this.player.equipmentBonuses.strength.toString();
+    }
+
+    /**
+     * Open shop UI
+     */
+    openShop(shopId: string): void {
+        const shopSystem = this.gameLogic.shopSystem;
+        if (!shopSystem) {
+            this.addMessage('Shop system not available.', 'game');
+            return;
+        }
+
+        const result = shopSystem.openShop(shopId);
+        if (!result.success) {
+            this.addMessage(result.message || 'Cannot open shop.', 'game');
+            return;
+        }
+
+        // Setup close button
+        const closeBtn = document.getElementById('shop-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => this.closeShop();
+        }
+
+        // Show shop modal
+        const modal = document.getElementById('shop-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+
+        this.updateShopUI();
+    }
+
+    /**
+     * Close shop UI
+     */
+    closeShop(): void {
+        const shopSystem = this.gameLogic.shopSystem;
+        if (shopSystem) {
+            shopSystem.closeShop();
+        }
+
+        const modal = document.getElementById('shop-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Update shop UI display
+     */
+    updateShopUI(): void {
+        const shopSystem = this.gameLogic.shopSystem;
+        if (!shopSystem) return;
+
+        const shop = shopSystem.getCurrentShop() as {
+            name: string;
+            items: Array<{
+                id: string;
+                name: string;
+                stock: number;
+                buyPrice: number;
+                sellPrice: number;
+            }>;
+            buysItems?: boolean;
+        } | null;
+
+        if (!shop) return;
+
+        // Update title
+        const titleEl = document.getElementById('shop-title');
+        if (titleEl) {
+            titleEl.textContent = shop.name;
+        }
+
+        // Update coins display
+        const coinsEl = document.getElementById('shop-coins');
+        if (coinsEl) {
+            coinsEl.textContent = `Coins: ${shopSystem.getPlayerCoins()}`;
+        }
+
+        // Update shop items
+        const shopItemsEl = document.getElementById('shop-items');
+        if (shopItemsEl) {
+            shopItemsEl.innerHTML = '';
+
+            for (const item of shop.items) {
+                const itemEl = document.createElement('div');
+                itemEl.className = `shop-item${item.stock <= 0 ? ' out-of-stock' : ''}`;
+                itemEl.innerHTML = `
+                    <div class="shop-item-name">${item.name}</div>
+                    <div class="shop-item-price">${item.buyPrice} gp</div>
+                    <div class="shop-item-stock">Stock: ${item.stock}</div>
+                `;
+
+                if (item.stock > 0) {
+                    itemEl.onclick = () => this.handleShopBuy(item.id);
+                }
+
+                shopItemsEl.appendChild(itemEl);
+            }
+        }
+
+        // Update player inventory for selling
+        const playerItemsEl = document.getElementById('shop-player-items');
+        if (playerItemsEl) {
+            playerItemsEl.innerHTML = '';
+
+            for (let i = 0; i < this.player.inventory.length; i++) {
+                const item = this.player.inventory[i];
+                if (!item) continue;
+
+                const itemEl = document.createElement('div');
+                itemEl.className = 'shop-sell-item';
+
+                // Calculate sell price (60% of value for general stores)
+                const sellPrice = Math.floor((item.value || 0) * 0.6);
+                const count = (item as { count?: number }).count || 1;
+
+                itemEl.innerHTML = `
+                    <div class="shop-sell-name">${item.name}</div>
+                    <div class="shop-sell-price">${sellPrice > 0 ? sellPrice + ' gp' : 'No value'}</div>
+                    ${count > 1 ? `<div class="shop-sell-count">x${count}</div>` : ''}
+                `;
+
+                if (sellPrice > 0 || shop.buysItems) {
+                    const slot = i;
+                    itemEl.onclick = () => this.handleShopSell(slot);
+                }
+
+                playerItemsEl.appendChild(itemEl);
+            }
+        }
+    }
+
+    /**
+     * Handle buying item from shop
+     */
+    handleShopBuy(itemId: string): void {
+        const shopSystem = this.gameLogic.shopSystem;
+        if (!shopSystem) return;
+
+        const result = shopSystem.buyItem(itemId, 1);
+        this.addMessage(result.message, 'game');
+
+        if (result.success) {
+            this.updateShopUI();
+            this.updateInventory();
+        }
+    }
+
+    /**
+     * Handle selling item to shop
+     */
+    handleShopSell(slot: number): void {
+        const shopSystem = this.gameLogic.shopSystem;
+        if (!shopSystem) return;
+
+        const result = shopSystem.sellItem(slot, 1);
+        this.addMessage(result.message, 'game');
+
+        if (result.success) {
+            this.updateShopUI();
+            this.updateInventory();
+        }
     }
 
     /**
