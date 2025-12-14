@@ -12,7 +12,10 @@ import { SkillsSystem } from '../systems/SkillsSystem';
 import { QuestSystem } from '../systems/QuestSystem';
 import { LootSystem } from '../systems/LootSystem';
 import { ShopSystem } from '../systems/ShopSystem';
+import { TutorialSystem } from '../systems/TutorialSystem';
+import { SaveSystem } from '../systems/SaveSystem';
 import { UIManager } from '../ui/UIManager';
+import { ITEMS } from '../utils/Constants';
 import { InputHandler } from './InputHandler';
 import { CameraController } from './CameraController';
 import { DamageSplashManager } from './DamageSplashManager';
@@ -66,6 +69,7 @@ export class GameLogic {
     public questSystem: QuestSystem | null;
     public lootSystem: LootSystem | null;
     public shopSystem: ShopSystem | null;
+    public tutorialSystem: TutorialSystem | null;
     public ui: UIManager | null;
 
     // Extracted components
@@ -86,6 +90,7 @@ export class GameLogic {
         this.questSystem = null;
         this.lootSystem = null;
         this.shopSystem = null;
+        this.tutorialSystem = null;
         this.ui = null;
 
         // Extracted components
@@ -166,8 +171,17 @@ export class GameLogic {
             this.inputHandler = new InputHandler({
                 getPlayer: () => this.player,
                 getCombatSystem: () => this.combatSystem,
-                onCameraRotate: (deltaX, deltaY) => this.cameraController?.rotate(deltaX, deltaY),
-                onCameraZoom: (delta) => this.cameraController?.zoom(delta)
+                onCameraRotate: (deltaX, deltaY) => {
+                    this.cameraController?.rotate(deltaX, deltaY);
+                    this.tutorialSystem?.trackCameraRotate();
+                },
+                onCameraZoom: (delta) => {
+                    this.cameraController?.zoom(delta);
+                    this.tutorialSystem?.trackCameraZoom();
+                },
+                onMovement: () => {
+                    this.tutorialSystem?.trackMovement();
+                }
             });
             this.inputHandler.setup();
 
@@ -182,7 +196,15 @@ export class GameLogic {
             this.ui.updateStats();
             this.ui.updateInventory();
             this.ui.addMessage('Welcome to Lumbridge!', 'game');
-            this.ui.addMessage('Use WASD or Arrow keys to move, click to interact.', 'system');
+
+            // Initialize tutorial system
+            console.log('Init: Setting up tutorial...');
+            this.tutorialSystem = new TutorialSystem(this.player);
+            this.setupTutorial();
+
+            // Setup save/load buttons
+            console.log('Init: Setting up save/load...');
+            this.setupSaveLoadHandlers();
 
             this.engine.updateLoadingProgress(90);
 
@@ -221,6 +243,125 @@ export class GameLogic {
     }
 
     /**
+     * Setup tutorial system and connect it to UI
+     */
+    setupTutorial(): void {
+        if (!this.tutorialSystem || !this.ui) return;
+
+        // Connect tutorial step changes to UI
+        this.tutorialSystem.setOnStepChange((step) => {
+            if (step) {
+                this.ui!.showTutorialStep(step.title, step.message, step.hint);
+            } else {
+                this.ui!.hideTutorial();
+            }
+        });
+
+        // Setup skip button
+        this.ui.setupTutorialSkipHandler(() => {
+            this.tutorialSystem?.skip();
+        });
+
+        // Connect inventory tab tracking
+        this.ui.onInventoryTabOpen = () => {
+            this.tutorialSystem?.trackInventoryOpen();
+        };
+
+        // Connect enemy kill tracking
+        if (this.combatSystem) {
+            this.combatSystem.onEnemyKill = () => {
+                this.tutorialSystem?.trackKill();
+            };
+        }
+
+        // Setup completion callback
+        this.tutorialSystem.setOnComplete(() => {
+            this.ui?.addMessage('Tutorial complete! Good luck on your adventure.', 'system');
+        });
+    }
+
+    /**
+     * Setup save/load button handlers
+     */
+    setupSaveLoadHandlers(): void {
+        const saveBtn = document.getElementById('save-btn');
+        const loadBtn = document.getElementById('load-btn');
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.saveGame());
+        }
+        if (loadBtn) {
+            loadBtn.addEventListener('click', () => this.loadGame());
+        }
+    }
+
+    /**
+     * Save the game
+     */
+    saveGame(): void {
+        if (!this.player || !this.questSystem || !this.tutorialSystem) {
+            this.ui?.addMessage('Cannot save - game not fully initialized.', 'system');
+            return;
+        }
+
+        // Get quest progress
+        const questProgress: Record<string, number> = {};
+        for (const [questId, quest] of Object.entries(this.questSystem.quests)) {
+            questProgress[questId] = quest.currentStage;
+        }
+
+        // Get tutorial progress
+        const tutorialProgress = this.tutorialSystem.getProgress();
+
+        const success = SaveSystem.save(this.player, questProgress, tutorialProgress);
+        if (success) {
+            this.ui?.addMessage('Game saved successfully!', 'system');
+        } else {
+            this.ui?.addMessage('Failed to save game.', 'system');
+        }
+    }
+
+    /**
+     * Load the game
+     */
+    loadGame(): void {
+        if (!this.player || !this.questSystem || !this.tutorialSystem || !this.ui) {
+            this.ui?.addMessage('Cannot load - game not fully initialized.', 'system');
+            return;
+        }
+
+        const saveData = SaveSystem.load();
+        if (!saveData) {
+            this.ui.addMessage('No save data found.', 'system');
+            return;
+        }
+
+        // Create item lookup map by ID
+        const itemLookup: Record<number, typeof ITEMS[keyof typeof ITEMS]> = {};
+        for (const item of Object.values(ITEMS)) {
+            itemLookup[item.id] = item;
+        }
+
+        // Apply save data to player
+        SaveSystem.applyToPlayer(this.player, saveData, itemLookup);
+
+        // Restore quest progress
+        for (const [questId, stage] of Object.entries(saveData.quests)) {
+            this.questSystem.setQuestStage(questId, stage);
+        }
+
+        // Restore tutorial progress
+        this.tutorialSystem.loadProgress(saveData.tutorial);
+
+        // Update UI
+        this.ui.updateStats();
+        this.ui.updateInventory();
+        this.cameraController?.update();
+
+        this.ui.addMessage('Game loaded successfully!', 'system');
+    }
+
+    /**
      * Handle game world clicks
      */
     handleGameClickEvent(detail: GameClickDetail): void {
@@ -254,11 +395,13 @@ export class GameLogic {
                 this.player.moveTo(point.x, point.z);
                 this.combatSystem.stopCombat();
                 this.ui.addMessage(`Walking to (${Math.floor(point.x)}, ${Math.floor(point.z)})`, 'game');
+                this.tutorialSystem?.trackMovement();
                 break;
 
             case 'enemy':
                 if (!entityResult.entity.isDead) {
                     this.combatSystem.attackTarget(entityResult.entity);
+                    this.tutorialSystem?.trackAttack();
                 }
                 break;
 
@@ -269,6 +412,7 @@ export class GameLogic {
                     : null;
                 const dialogue = questDialogue || npc.talk();
                 this.ui.addMessage(`${npc.name}: ${dialogue}`, 'game');
+                this.tutorialSystem?.trackNPCTalk();
                 break;
             }
 
@@ -276,6 +420,7 @@ export class GameLogic {
                 if (!entityResult.resource.depleted) {
                     // Resource from userData has all required properties, cast to satisfy SkillsSystem
                     this.skillsSystem.gatherResource(entityResult.resource as unknown);
+                    this.tutorialSystem?.trackGathering();
                 }
                 break;
         }
@@ -464,6 +609,9 @@ export class GameLogic {
         if (this.shopSystem) {
             this.shopSystem.dispose();
         }
+        if (this.tutorialSystem) {
+            this.tutorialSystem.dispose();
+        }
         if (this.ui) {
             this.ui.dispose();
         }
@@ -482,6 +630,7 @@ export class GameLogic {
         this.questSystem = null;
         this.lootSystem = null;
         this.shopSystem = null;
+        this.tutorialSystem = null;
         this.ui = null;
 
         // Clear references to entities and world

@@ -35,6 +35,10 @@
             <div id="combat-level">
                 <span>Combat Lvl: <span id="combat-lvl-text">3</span></span>
             </div>
+            <div id="game-controls">
+                <button id="save-btn" title="Save Game">Save</button>
+                <button id="load-btn" title="Load Game">Load</button>
+            </div>
         </div>
 
         <!-- Chat Box / Message Area -->
@@ -180,6 +184,18 @@
                     <div id="loading-progress"></div>
                 </div>
                 <p id="loading-text">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Tutorial Overlay -->
+        <div id="tutorial-overlay" class="hidden">
+            <div id="tutorial-box">
+                <h3 id="tutorial-title">Welcome!</h3>
+                <p id="tutorial-message">Tutorial message here</p>
+                <p id="tutorial-hint" class="hint">Hint: Do something</p>
+                <div id="tutorial-buttons">
+                    <button id="tutorial-skip">Skip Tutorial</button>
+                </div>
             </div>
         </div>
     </div>

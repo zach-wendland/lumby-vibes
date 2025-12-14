@@ -366,6 +366,34 @@ export class QuestSystem {
     }
 
     /**
+     * Get all quests as an object for save/load
+     */
+    get quests(): Record<string, { currentStage: number }> {
+        const result: Record<string, { currentStage: number }> = {};
+        for (const [id, quest] of this.questData) {
+            result[id] = { currentStage: quest.currentStage };
+        }
+        return result;
+    }
+
+    /**
+     * Set quest stage (for loading saves)
+     */
+    setQuestStage(questId: string, stage: number): void {
+        const quest = this.questData.get(questId);
+        if (quest) {
+            quest.currentStage = stage;
+            if (stage >= quest.stages.length) {
+                this.completedQuests.add(questId);
+                quest.status = QUEST_STATUS.COMPLETED;
+            } else if (stage > 0) {
+                this.activeQuests.set(questId, quest);
+                quest.status = QUEST_STATUS.IN_PROGRESS;
+            }
+        }
+    }
+
+    /**
      * Initialize all quests with default state
      */
     private initializeQuests(): void {

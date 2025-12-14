@@ -19,6 +19,7 @@ export interface InputHandlerConfig {
     getCombatSystem: () => CombatSystem | null;
     onCameraRotate: (deltaX: number, deltaY: number) => void;
     onCameraZoom: (delta: number) => void;
+    onMovement?: () => void;
 }
 
 /**
@@ -118,6 +119,9 @@ export class InputHandler {
                 if (player.inCombat && player.target) {
                     combatSystem.stopCombat();
                 }
+
+                // Notify movement for tutorial tracking
+                this.config.onMovement?.();
             }
         }
     }
