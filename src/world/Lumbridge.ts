@@ -734,6 +734,13 @@ export class Lumbridge {
     }
 
     /**
+     * Get all resources in the world
+     */
+    getResources(): Resource[] {
+        return this.resources;
+    }
+
+    /**
      * Update world (called every frame)
      */
     update(delta: number, player: Player): void {

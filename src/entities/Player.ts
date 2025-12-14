@@ -474,6 +474,31 @@ export class Player {
         this.isMoving = false;
         this.targetPosition = null;
     }
+
+    /**
+     * Dispose of player resources (geometries, materials, textures)
+     */
+    dispose(): void {
+        if (this.mesh) {
+            this.mesh.traverse((object) => {
+                if (object instanceof THREE.Mesh) {
+                    object.geometry.dispose();
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(material => material.dispose());
+                    } else {
+                        object.material.dispose();
+                    }
+                } else if (object instanceof THREE.Sprite) {
+                    if (object.material.map) {
+                        object.material.map.dispose();
+                    }
+                    object.material.dispose();
+                }
+            });
+            this.mesh = null;
+        }
+        this.bodyParts = null;
+    }
 }
 
 export default Player;

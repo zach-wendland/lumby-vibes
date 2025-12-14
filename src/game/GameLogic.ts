@@ -13,10 +13,19 @@ import { QuestSystem } from '../systems/QuestSystem';
 import { LootSystem } from '../systems/LootSystem';
 import { ShopSystem } from '../systems/ShopSystem';
 import { UIManager } from '../ui/UIManager';
-import { CAMERA } from '../utils/Constants';
+import { InputHandler } from './InputHandler';
+import { CameraController } from './CameraController';
+import { DamageSplashManager } from './DamageSplashManager';
 import type { Enemy } from '../entities/Enemy';
 import type { NPC } from '../entities/NPC';
 import type { IGameLogicContext, ISkillsSystemContext, IShopSystemContext } from '../types/game';
+import {
+    extractEntity,
+    getEnemyFromObject,
+    getNPCFromObject,
+    getResourceFromObject,
+    type ResourceData
+} from '../types/guards';
 
 /**
  * Context menu option interface
@@ -46,26 +55,6 @@ interface LevelUpDetail {
 }
 
 /**
- * Damage splash interface
- */
-interface DamageSplash {
-    sprite: THREE.Sprite;
-    startY: number;
-    startTime: number;
-    duration: number;
-}
-
-/**
- * Resource interface
- */
-interface Resource {
-    type: string;
-    name: string;
-    levelRequired: number;
-    depleted: boolean;
-}
-
-/**
  * GameLogic class - Main game controller
  */
 export class GameLogic {
@@ -79,25 +68,12 @@ export class GameLogic {
     public shopSystem: ShopSystem | null;
     public ui: UIManager | null;
 
-    private camera: THREE.PerspectiveCamera | null;
-    private cameraDistance: number;
-    private cameraAngle: number;
-    private cameraRotation: number;
-
-    private keys: Record<string, boolean>;
-    private mouseDown: boolean;
-    private lastMouseX: number;
-    private lastMouseY: number;
-
-    private damageSplashes: DamageSplash[];
+    // Extracted components
+    private inputHandler: InputHandler | null;
+    private cameraController: CameraController | null;
+    private damageSplashManager: DamageSplashManager;
 
     // Event handler references for cleanup
-    private handleKeyDown: (e: KeyboardEvent) => void;
-    private handleKeyUp: (e: KeyboardEvent) => void;
-    private handleMouseDown: (e: MouseEvent) => void;
-    private handleMouseUp: (e: MouseEvent) => void;
-    private handleMouseMove: (e: MouseEvent) => void;
-    private handleWheel: (e: WheelEvent) => void;
     private handleGameClick: (e: Event) => void;
     private handleLevelUp: (e: Event) => void;
 
@@ -112,65 +88,12 @@ export class GameLogic {
         this.shopSystem = null;
         this.ui = null;
 
-        this.camera = null;
-        this.cameraDistance = CAMERA.DEFAULT_DISTANCE;
-        this.cameraAngle = CAMERA.DEFAULT_ANGLE;
-        this.cameraRotation = 0;
+        // Extracted components
+        this.inputHandler = null;
+        this.cameraController = null;
+        this.damageSplashManager = new DamageSplashManager();
 
-        this.keys = {};
-        this.mouseDown = false;
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
-
-        this.damageSplashes = [];
-
-        // Initialize event handlers
-        this.handleKeyDown = (e: KeyboardEvent) => {
-            this.keys[e.code] = true;
-        };
-
-        this.handleKeyUp = (e: KeyboardEvent) => {
-            this.keys[e.code] = false;
-        };
-
-        this.handleMouseDown = (e: MouseEvent) => {
-            if (e.button === 1) { // Middle mouse button
-                this.mouseDown = true;
-                this.lastMouseX = e.clientX;
-                this.lastMouseY = e.clientY;
-                e.preventDefault();
-            }
-        };
-
-        this.handleMouseUp = (e: MouseEvent) => {
-            if (e.button === 1) {
-                this.mouseDown = false;
-            }
-        };
-
-        this.handleMouseMove = (e: MouseEvent) => {
-            if (this.mouseDown) {
-                const deltaX = e.clientX - this.lastMouseX;
-                const deltaY = e.clientY - this.lastMouseY;
-
-                this.cameraRotation -= deltaX * 0.005;
-                this.cameraAngle = Math.max(0.1, Math.min(Math.PI / 2.5, this.cameraAngle + deltaY * 0.005));
-
-                this.lastMouseX = e.clientX;
-                this.lastMouseY = e.clientY;
-
-                this.updateCamera();
-            }
-        };
-
-        this.handleWheel = (e: WheelEvent) => {
-            this.cameraDistance = Math.max(
-                CAMERA.MIN_DISTANCE,
-                Math.min(CAMERA.MAX_DISTANCE, this.cameraDistance + e.deltaY * 0.01)
-            );
-            this.updateCamera();
-        };
-
+        // Event handlers
         this.handleGameClick = ((e: CustomEvent<GameClickDetail>) => {
             this.handleGameClickEvent(e.detail);
         }) as EventListener;
@@ -227,14 +150,31 @@ export class GameLogic {
             // Resources are stored in world userData, but we'll skip this for now as it's handled by Lumbridge
             this.engine.updateLoadingProgress(80);
 
-            // Setup camera
+            // Setup camera controller
             console.log('Init: Setting up camera...');
-            this.setupCamera();
-            window.gameCamera = this.camera!; // For sprite billboarding
+            if (!this.engine.camera) {
+                throw new Error('Camera not initialized - engine initialization failed');
+            }
+            this.cameraController = new CameraController({
+                camera: this.engine.camera,
+                getPlayer: () => this.player
+            });
+            window.gameCamera = this.engine.camera; // For sprite billboarding
 
-            // Setup controls
+            // Setup input handler
             console.log('Init: Setting up controls...');
-            this.setupControls();
+            this.inputHandler = new InputHandler({
+                getPlayer: () => this.player,
+                getCombatSystem: () => this.combatSystem,
+                onCameraRotate: (deltaX, deltaY) => this.cameraController?.rotate(deltaX, deltaY),
+                onCameraZoom: (delta) => this.cameraController?.zoom(delta)
+            });
+            this.inputHandler.setup();
+
+            // Setup damage splash manager
+            if (this.engine.scene) {
+                this.damageSplashManager.setScene(this.engine.scene);
+            }
 
             // Initialize UI (player is guaranteed non-null at this point)
             console.log('Init: Initializing UI...');
@@ -270,47 +210,6 @@ export class GameLogic {
     }
 
     /**
-     * Setup camera
-     */
-    setupCamera(): void {
-        this.camera = this.engine.camera;
-        this.updateCamera();
-    }
-
-    /**
-     * Update camera position
-     */
-    updateCamera(): void {
-        if (!this.camera || !this.player) return;
-
-        const height = this.cameraDistance * Math.sin(this.cameraAngle);
-        const distance = this.cameraDistance * Math.cos(this.cameraAngle);
-
-        this.camera.position.x = this.player.position.x + Math.sin(this.cameraRotation) * distance;
-        this.camera.position.y = height;
-        this.camera.position.z = this.player.position.z + Math.cos(this.cameraRotation) * distance;
-
-        this.camera.lookAt(this.player.position);
-    }
-
-    /**
-     * Setup controls
-     */
-    setupControls(): void {
-        // Keyboard
-        window.addEventListener('keydown', this.handleKeyDown);
-        window.addEventListener('keyup', this.handleKeyUp);
-
-        // Mouse camera rotation
-        window.addEventListener('mousedown', this.handleMouseDown);
-        window.addEventListener('mouseup', this.handleMouseUp);
-        window.addEventListener('mousemove', this.handleMouseMove);
-
-        // Mouse wheel zoom
-        window.addEventListener('wheel', this.handleWheel);
-    }
-
-    /**
      * Setup game event listeners
      */
     setupEventListeners(): void {
@@ -329,97 +228,140 @@ export class GameLogic {
 
         const { object, point, button, mouseX, mouseY } = detail;
 
-        if (!object || !object.userData) return;
+        if (!object) return;
 
-        const type = object.userData.type || object.parent?.userData?.type;
+        // Use type-safe entity extraction
+        const entityResult = extractEntity(object, point);
 
         // Left click
         if (button === 'left') {
-            if (type === 'terrain') {
-                // Walk to location
-                this.player.moveTo(point.x, point.z);
-                this.combatSystem.stopCombat();
-                this.ui.addMessage(`Walking to (${Math.floor(point.x)}, ${Math.floor(point.z)})`, 'game');
-            } else if (type === 'enemy') {
-                const enemy = object.userData.entity || object.parent?.userData?.entity;
-                if (enemy && !enemy.isDead) {
-                    this.combatSystem.attackTarget(enemy as Enemy);
-                }
-            } else if (type === 'npc') {
-                const npc = object.userData.entity || object.parent?.userData?.entity;
-                if (npc) {
-                    // Check for quest-related dialogue
-                    const questDialogue = this.questSystem
-                        ? this.questSystem.getNPCDialogue((npc as NPC).npcId || (npc as NPC).name, this.player)
-                        : null;
-
-                    const dialogue = questDialogue || (npc as NPC).talk();
-                    this.ui.addMessage(`${(npc as NPC).name}: ${dialogue}`, 'game');
-                }
-            } else if (type === 'resource') {
-                const resource = object.userData.resource || object.parent?.userData?.resource;
-                if (resource && !resource.depleted) {
-                    this.skillsSystem.gatherResource(resource);
-                }
-            }
+            this.handleLeftClick(entityResult, point);
         }
         // Right click
         else if (button === 'right' && mouseX !== undefined && mouseY !== undefined) {
-            if (type === 'enemy') {
-                const enemy = object.userData.entity || object.parent?.userData?.entity;
-                if (enemy) {
-                    this.showContextMenu(mouseX, mouseY, [
-                        { label: `Attack ${(enemy as Enemy).name}`, action: () => this.combatSystem!.attackTarget(enemy as Enemy) },
-                        { label: 'Examine', action: () => this.ui!.addMessage(`A ${(enemy as Enemy).name} (Level ${(enemy as Enemy).level})`, 'game') }
-                    ]);
-                }
-            } else if (type === 'npc') {
-                const npc = object.userData.entity || object.parent?.userData?.entity;
-                if (npc) {
-                    const menuOptions: ContextMenuOption[] = [];
-
-                    // Add quest options if available
-                    if (this.questSystem) {
-                        const questOptions = this.questSystem.getQuestOptions((npc as NPC).npcId || (npc as NPC).name, this.player);
-                        menuOptions.push(...questOptions.map(opt => ({
-                            label: opt.label,
-                            action: () => {
-                                const result = this.questSystem!.handleQuestInteraction(opt.questId, opt.action, this.player!);
-                                if (result && result.message) {
-                                    this.ui!.addMessage(`${(npc as NPC).name}: ${result.message}`, 'game');
-                                }
-                                if (result && result.updateUI) {
-                                    this.ui!.updateStats();
-                                }
-                            }
-                        })));
-                    }
-
-                    // Add standard talk option
-                    menuOptions.push(
-                        { label: 'Talk-to', action: () => {
-                            const questDialogue = this.questSystem
-                                ? this.questSystem.getNPCDialogue((npc as NPC).npcId || (npc as NPC).name, this.player!)
-                                : null;
-                            const dialogue = questDialogue || (npc as NPC).talk();
-                            this.ui!.addMessage(`${(npc as NPC).name}: ${dialogue}`, 'game');
-                        }},
-                        { label: 'Examine', action: () => this.ui!.addMessage(`This is ${(npc as NPC).name}.`, 'game') }
-                    );
-
-                    this.showContextMenu(mouseX, mouseY, menuOptions);
-                }
-            } else if (type === 'resource') {
-                const resource = object.userData.resource || object.parent?.userData?.resource;
-                if (resource) {
-                    const skillName = this.skillsSystem.getRequiredSkill((resource as Resource).type);
-                    this.showContextMenu(mouseX, mouseY, [
-                        { label: `Chop ${(resource as Resource).name}`, action: () => this.skillsSystem!.gatherResource(resource) },
-                        { label: 'Examine', action: () => this.ui!.addMessage(`A ${(resource as Resource).name}. Requires level ${(resource as Resource).levelRequired} ${skillName}.`, 'game') }
-                    ]);
-                }
-            }
+            this.handleRightClick(object, mouseX, mouseY);
         }
+    }
+
+    /**
+     * Handle left click on entities
+     */
+    private handleLeftClick(entityResult: ReturnType<typeof extractEntity>, point: THREE.Vector3): void {
+        if (!this.player || !this.ui || !this.combatSystem || !this.skillsSystem) return;
+
+        switch (entityResult.type) {
+            case 'terrain':
+                this.player.moveTo(point.x, point.z);
+                this.combatSystem.stopCombat();
+                this.ui.addMessage(`Walking to (${Math.floor(point.x)}, ${Math.floor(point.z)})`, 'game');
+                break;
+
+            case 'enemy':
+                if (!entityResult.entity.isDead) {
+                    this.combatSystem.attackTarget(entityResult.entity);
+                }
+                break;
+
+            case 'npc': {
+                const npc = entityResult.entity;
+                const questDialogue = this.questSystem
+                    ? this.questSystem.getNPCDialogue(npc.npcId || npc.name, this.player)
+                    : null;
+                const dialogue = questDialogue || npc.talk();
+                this.ui.addMessage(`${npc.name}: ${dialogue}`, 'game');
+                break;
+            }
+
+            case 'resource':
+                if (!entityResult.resource.depleted) {
+                    // Resource from userData has all required properties, cast to satisfy SkillsSystem
+                    this.skillsSystem.gatherResource(entityResult.resource as unknown);
+                }
+                break;
+        }
+    }
+
+    /**
+     * Handle right click context menus
+     */
+    private handleRightClick(object: THREE.Object3D, mouseX: number, mouseY: number): void {
+        if (!this.player || !this.ui || !this.combatSystem || !this.skillsSystem) return;
+
+        const enemy = getEnemyFromObject(object);
+        if (enemy) {
+            this.showContextMenu(mouseX, mouseY, [
+                { label: `Attack ${enemy.name}`, action: () => this.combatSystem!.attackTarget(enemy) },
+                { label: 'Examine', action: () => this.ui!.addMessage(`A ${enemy.name} (Level ${enemy.level})`, 'game') }
+            ]);
+            return;
+        }
+
+        const npc = getNPCFromObject(object);
+        if (npc) {
+            this.showNPCContextMenu(npc, mouseX, mouseY);
+            return;
+        }
+
+        const resource = getResourceFromObject(object);
+        if (resource) {
+            this.showResourceContextMenu(resource, mouseX, mouseY);
+        }
+    }
+
+    /**
+     * Show NPC context menu
+     */
+    private showNPCContextMenu(npc: NPC, mouseX: number, mouseY: number): void {
+        if (!this.player || !this.ui) return;
+
+        const menuOptions: ContextMenuOption[] = [];
+
+        // Add quest options if available
+        if (this.questSystem) {
+            const questOptions = this.questSystem.getQuestOptions(npc.npcId || npc.name, this.player);
+            menuOptions.push(...questOptions.map(opt => ({
+                label: opt.label,
+                action: () => {
+                    const result = this.questSystem!.handleQuestInteraction(opt.questId, opt.action, this.player!);
+                    if (result?.message) {
+                        this.ui!.addMessage(`${npc.name}: ${result.message}`, 'game');
+                    }
+                    if (result?.updateUI) {
+                        this.ui!.updateStats();
+                    }
+                }
+            })));
+        }
+
+        // Add standard talk option
+        menuOptions.push(
+            {
+                label: 'Talk-to',
+                action: () => {
+                    const questDialogue = this.questSystem
+                        ? this.questSystem.getNPCDialogue(npc.npcId || npc.name, this.player!)
+                        : null;
+                    const dialogue = questDialogue || npc.talk();
+                    this.ui!.addMessage(`${npc.name}: ${dialogue}`, 'game');
+                }
+            },
+            { label: 'Examine', action: () => this.ui!.addMessage(`This is ${npc.name}.`, 'game') }
+        );
+
+        this.showContextMenu(mouseX, mouseY, menuOptions);
+    }
+
+    /**
+     * Show resource context menu
+     */
+    private showResourceContextMenu(resource: ResourceData, mouseX: number, mouseY: number): void {
+        if (!this.ui || !this.skillsSystem) return;
+
+        const skillName = this.skillsSystem.getRequiredSkill(resource.type);
+        this.showContextMenu(mouseX, mouseY, [
+            { label: `Chop ${resource.name}`, action: () => this.skillsSystem!.gatherResource(resource as unknown) },
+            { label: 'Examine', action: () => this.ui!.addMessage(`A ${resource.name}. Requires level ${resource.levelRequired} ${skillName}.`, 'game') }
+        ]);
     }
 
     /**
@@ -443,112 +385,10 @@ export class GameLogic {
     }
 
     /**
-     * Handle player movement from keyboard
-     */
-    handleMovement(delta: number): void {
-        if (!this.player || !this.combatSystem) return;
-
-        let dx = 0;
-        let dz = 0;
-
-        if (this.keys['KeyW'] || this.keys['ArrowUp']) dz -= 1;
-        if (this.keys['KeyS'] || this.keys['ArrowDown']) dz += 1;
-        if (this.keys['KeyA'] || this.keys['ArrowLeft']) dx -= 1;
-        if (this.keys['KeyD'] || this.keys['ArrowRight']) dx += 1;
-
-        if (dx !== 0 || dz !== 0) {
-            // Normalize diagonal movement
-            const length = Math.sqrt(dx * dx + dz * dz);
-            dx /= length;
-            dz /= length;
-
-            // Move player
-            const newX = this.player.position.x + dx * this.player.speed * delta;
-            const newZ = this.player.position.z + dz * this.player.speed * delta;
-
-            // Bounds check
-            const bound = 140;
-            if (newX > -bound && newX < bound && newZ > -bound && newZ < bound) {
-                this.player.position.x = newX;
-                this.player.position.z = newZ;
-                this.player.rotation = Math.atan2(dx, dz);
-
-                // Stop combat when moving manually
-                if (this.player.inCombat && this.player.target) {
-                    this.combatSystem.stopCombat();
-                }
-            }
-        }
-    }
-
-    /**
      * Create damage splash effect
      */
     createDamageSplash(position: THREE.Vector3, damage: number): void {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) return;
-
-        canvas.width = 128;
-        canvas.height = 64;
-
-        const color = damage === 0 ? '#0099FF' : '#FF0000';
-        const text = damage === 0 ? 'Miss' : damage.toString();
-
-        context.fillStyle = color;
-        context.font = 'Bold 32px Arial';
-        context.textAlign = 'center';
-        context.fillText(text, 64, 40);
-
-        const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.SpriteMaterial({ map: texture });
-        const sprite = new THREE.Sprite(material);
-        sprite.position.copy(position);
-        sprite.position.y += 3;
-        sprite.scale.set(2, 1, 1);
-
-        if (this.engine.scene) {
-            this.engine.scene.add(sprite);
-        }
-
-        // Animate and remove
-        const startY = sprite.position.y;
-        const startTime = Date.now();
-
-        this.damageSplashes.push({
-            sprite,
-            startY,
-            startTime,
-            duration: 1500
-        });
-    }
-
-    /**
-     * Update damage splashes
-     */
-    updateDamageSplashes(): void {
-        const now = Date.now();
-
-        for (let i = this.damageSplashes.length - 1; i >= 0; i--) {
-            const splash = this.damageSplashes[i];
-            const elapsed = now - splash.startTime;
-
-            if (elapsed >= splash.duration) {
-                if (this.engine.scene) {
-                    this.engine.scene.remove(splash.sprite);
-                }
-                // Dispose texture and material to prevent memory leaks
-                if (splash.sprite.material.map) {
-                    splash.sprite.material.map.dispose();
-                }
-                splash.sprite.material.dispose();
-                this.damageSplashes.splice(i, 1);
-            } else {
-                const progress = elapsed / splash.duration;
-                splash.sprite.position.y = splash.startY + progress * 2;
-                splash.sprite.material.opacity = 1 - progress;
-            }
-        }
+        this.damageSplashManager.create(position, damage);
     }
 
     /**
@@ -558,7 +398,7 @@ export class GameLogic {
         if (!this.player || !this.world || !this.combatSystem || !this.skillsSystem || !this.ui) return;
 
         // Handle keyboard movement
-        this.handleMovement(delta);
+        this.inputHandler?.handleMovement(delta);
 
         // Update systems
         this.combatSystem.update(delta);
@@ -568,10 +408,10 @@ export class GameLogic {
         this.world.update(delta, this.player);
 
         // Update camera
-        this.updateCamera();
+        this.cameraController?.update();
 
         // Update damage splashes
-        this.updateDamageSplashes();
+        this.damageSplashManager.update();
 
         // Update UI
         this.ui.updateStats();
@@ -594,14 +434,14 @@ export class GameLogic {
             this.engine.stop();
         }
 
-        // Remove all event listeners
+        // Dispose input handler (removes its event listeners)
+        if (this.inputHandler) {
+            this.inputHandler.dispose();
+            this.inputHandler = null;
+        }
+
+        // Remove game event listeners
         if (typeof window !== 'undefined') {
-            window.removeEventListener('keydown', this.handleKeyDown);
-            window.removeEventListener('keyup', this.handleKeyUp);
-            window.removeEventListener('mousedown', this.handleMouseDown);
-            window.removeEventListener('mouseup', this.handleMouseUp);
-            window.removeEventListener('mousemove', this.handleMouseMove);
-            window.removeEventListener('wheel', this.handleWheel);
             window.removeEventListener('gameClick', this.handleGameClick);
             window.removeEventListener('levelUp', this.handleLevelUp);
         }
@@ -611,15 +451,8 @@ export class GameLogic {
             this.engine.dispose();
         }
 
-        // Clear damage splashes
-        if (this.damageSplashes && this.damageSplashes.length > 0) {
-            this.damageSplashes.forEach(splash => {
-                if (splash.sprite && splash.sprite.parent) {
-                    splash.sprite.parent.remove(splash.sprite);
-                }
-            });
-            this.damageSplashes = [];
-        }
+        // Dispose damage splash manager
+        this.damageSplashManager.dispose();
 
         // Dispose of all systems before clearing references
         if (this.combatSystem) {
@@ -638,6 +471,11 @@ export class GameLogic {
             this.world.dispose();
         }
 
+        // Dispose player
+        if (this.player) {
+            this.player.dispose();
+        }
+
         // Clear references to systems
         this.combatSystem = null;
         this.skillsSystem = null;
@@ -649,11 +487,7 @@ export class GameLogic {
         // Clear references to entities and world
         this.player = null;
         this.world = null;
-        this.camera = null;
-
-        // Clear keys
-        this.keys = {};
-        this.mouseDown = false;
+        this.cameraController = null;
     }
 }
 
