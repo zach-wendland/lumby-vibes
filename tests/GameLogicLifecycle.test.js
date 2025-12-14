@@ -27,14 +27,9 @@ describe('GameLogic lifecycle safeguards', () => {
         const gameLogic = new GameLogic();
         gameLogic.dispose();
 
-        // Verify all event listeners were removed
+        // Verify game event listeners were removed
+        // Note: keyboard/mouse events are now handled by InputHandler
         const removedEvents = windowRemoveSpy.mock.calls.map((call) => call[0]);
-        expect(removedEvents).toContain('keydown');
-        expect(removedEvents).toContain('keyup');
-        expect(removedEvents).toContain('mousedown');
-        expect(removedEvents).toContain('mouseup');
-        expect(removedEvents).toContain('mousemove');
-        expect(removedEvents).toContain('wheel');
         expect(removedEvents).toContain('gameClick');
         expect(removedEvents).toContain('levelUp');
     });
@@ -76,13 +71,15 @@ describe('GameLogic lifecycle safeguards', () => {
         const gameLogic = new GameLogic();
 
         // Set some mock references with dispose method
+        const playerDispose = jest.fn();
         const worldDispose = jest.fn();
-        gameLogic.player = {};
+        gameLogic.player = { dispose: playerDispose };
         gameLogic.world = { dispose: worldDispose };
 
         gameLogic.dispose();
 
-        // Verify dispose was called on world
+        // Verify dispose was called on player and world
+        expect(playerDispose).toHaveBeenCalled();
         expect(worldDispose).toHaveBeenCalled();
 
         // Verify all references are cleared

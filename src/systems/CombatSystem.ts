@@ -36,6 +36,9 @@ export class CombatSystem {
     private combatQueue: Enemy[];
     private attackTimer: number;
 
+    // Callback for when an enemy is killed (for tutorial tracking)
+    public onEnemyKill: (() => void) | null = null;
+
     constructor(gameLogic: IGameLogicContext) {
         this.gameLogic = gameLogic;
         this.player = gameLogic.player;
@@ -201,6 +204,9 @@ export class CombatSystem {
 
         // Update UI
         this.gameLogic.ui.updateStats();
+
+        // Notify kill callback (for tutorial tracking)
+        this.onEnemyKill?.();
     }
 
     /**

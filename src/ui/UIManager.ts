@@ -113,6 +113,11 @@ export class UIManager {
         if (activePanel) {
             activePanel.classList.add('active');
         }
+
+        // Trigger inventory open callback for tutorial
+        if (tabName === 'inventory' && this.onInventoryTabOpen) {
+            this.onInventoryTabOpen();
+        }
     }
 
     /**
@@ -410,12 +415,58 @@ export class UIManager {
     }
 
     /**
+     * Show tutorial step
+     */
+    showTutorialStep(title: string, message: string, hint: string): void {
+        const overlay = document.getElementById('tutorial-overlay');
+        const titleEl = document.getElementById('tutorial-title');
+        const messageEl = document.getElementById('tutorial-message');
+        const hintEl = document.getElementById('tutorial-hint');
+
+        if (overlay && titleEl && messageEl && hintEl) {
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            hintEl.textContent = `Hint: ${hint}`;
+            overlay.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Hide tutorial overlay
+     */
+    hideTutorial(): void {
+        const overlay = document.getElementById('tutorial-overlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Setup tutorial skip button handler
+     */
+    setupTutorialSkipHandler(onSkip: () => void): void {
+        const skipBtn = document.getElementById('tutorial-skip');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => {
+                onSkip();
+                this.hideTutorial();
+            });
+        }
+    }
+
+    /**
+     * Get callback when inventory tab is opened (for tutorial tracking)
+     */
+    onInventoryTabOpen: (() => void) | null = null;
+
+    /**
      * Dispose of resources and clean up
      * Note: Full event listener cleanup would require refactoring to store handler references
      */
     dispose(): void {
         // Clear current tab reference
         this.currentTab = '';
+        this.onInventoryTabOpen = null;
 
         // Note: Event listeners on DOM elements (tab buttons, chat input, inventory slots, context menus)
         // would need to be explicitly removed if handler references were stored during setupEventListeners()

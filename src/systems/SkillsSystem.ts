@@ -84,10 +84,28 @@ export class SkillsSystem {
     }
 
     /**
+     * Type guard to check if object is a valid Resource
+     */
+    private isValidResource(obj: unknown): obj is Resource {
+        if (!obj || typeof obj !== 'object') return false;
+        const r = obj as Record<string, unknown>;
+        return (
+            typeof r.type === 'string' &&
+            typeof r.name === 'string' &&
+            typeof r.levelRequired === 'number' &&
+            typeof r.hp === 'number' &&
+            typeof r.xpReward === 'number' &&
+            typeof r.depleted === 'boolean' &&
+            typeof r.deplete === 'function' &&
+            typeof r.respawn === 'function'
+        );
+    }
+
+    /**
      * Gather from resource (Mining, Woodcutting, Fishing)
      */
-    gatherResource(resource: Resource): void {
-        if (!resource || resource.depleted) return;
+    gatherResource(resource: unknown): void {
+        if (!this.isValidResource(resource) || resource.depleted) return;
 
         const skillRequired = this.getRequiredSkill(resource.type);
         if (!skillRequired) return;

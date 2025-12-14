@@ -267,7 +267,8 @@ describe('SkillsSystem', () => {
                 hp: 3,
                 xpReward: 17.5,
                 depleted: false,
-                deplete: jest.fn()
+                deplete: jest.fn(),
+                respawn: jest.fn()
             };
 
             skillsSystem.gatherResource(copperRock);
@@ -283,7 +284,8 @@ describe('SkillsSystem', () => {
                 hp: 1,
                 xpReward: 10,
                 depleted: false,
-                deplete: jest.fn()
+                deplete: jest.fn(),
+                respawn: jest.fn()
             };
 
             skillsSystem.gatherResource(fishingSpot);
@@ -432,7 +434,8 @@ describe('SkillsSystem', () => {
                     hp: 5,
                     xpReward: resourceData.xpReward,
                     depleted: false,
-                    deplete: jest.fn()
+                    deplete: jest.fn(),
+                    respawn: jest.fn()
                 };
 
                 mockPlayer.addXP.mockClear();
